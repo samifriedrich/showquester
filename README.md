@@ -36,10 +36,23 @@ As a mixtape fiend, the age of streaming has turned me into a chronic playlister
 - Number of plays
 - Acoustic features
 ### Bands with the same name
-- Use genre data to help select correct band
+- Use genre data
+  - API artist endpoint has 'genre' as a list of associated genres
+  - <section class="topline-info"> often contains genre words
+  - Use NLP to identify genre words in topline-info string
+  - if needed, can navigate to href in topline-info and extract entire bio then perfrom NLP on that
+- Use place data
+  - <section class="topline-info"> often contains place or country
+  - can get country from Spotify API artist endoint, but that's it
 ### Dirty strings
   - 'SOLD OUT'
   - '/'
   - 'a night with'
   - 'featuring'
 - how to deal with typos?
+  
+### Bands that are not on Spotify
+- future plans to make this Spotify-independent and instead create playlists linked to YouTube or SoundCloud tracks (requires more interaction from user, but will capture more artists)
+
+## To-Do
+- extract topline-info and add to df
