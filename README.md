@@ -1,4 +1,4 @@
-# aroundtown
+# SoundQuester
 Generates Spotify playlists showcasing artists with upcoming shows at my favorite PDX venues
 
 I love live shows. It's my favorite way to discover new bands and celebrate bands I already love. My old method of finding shows was to check the listings in my local paper, Google the bands, find a track or video, then decide if I wanted to buy a ticket. I developed `aroundtown` as a way to spend less time searching and more time listening, to discover new artists with upcoming shows in my area within an app (Spotify) I already use daily.
