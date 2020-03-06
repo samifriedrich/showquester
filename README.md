@@ -1,14 +1,25 @@
-# SoundQuester
-Generates Spotify playlists showcasing artists with upcoming shows at my favorite PDX venues
+# ShowQuester
+Generates Spotify playlists showcasing artists with upcoming shows at my favorite live music venues.
 
-I love live shows. It's my favorite way to discover new bands and celebrate bands I already love. My old method of finding shows was to check the listings in my local paper, Google the bands, find a track or video, then decide if I wanted to buy a ticket. I developed `aroundtown` as a way to spend less time searching and more time listening, to discover new artists with upcoming shows in my area within an app (Spotify) I already use daily.
+# How to access the playlists
+All ShowQuester playlists can be found [here on my Spotify user page](https://open.spotify.com/user/1237403078?si=5U16WCC1QliVyfa67_aMEA). 
 
-As a mixtape fiend, the age of streaming has turned me into a chronic playlister. I create playlists of music to set the tone of a roadtrip, help me focus at work, energize me at the gym, capture the feeling of a place or memory, etc. Unlike show trackers like Songkick and Bandsintown, `aroundtown` showcases all artists with tour dates instead of only artists that I've added or liked. I specifically designed it to showcase every listing in the spirit of novelty and inclusivity. `aroundtown` also takes the legwork out of finding the audio files to preview. Instead of tapping or clicking through the show tracker apps to listen one by one (that often open in spotify anyway,) I can simply hit 'play' and let my ears decide whether I want to attend a show.
+# Why I made this 
+I love live shows. It's my favorite way to discover new bands and celebrate bands I already love. My old method of finding shows was to check the listings in my local paper, Google the bands, find a track or video, then decide if I wanted to buy a ticket. I developed SoundQuester as a way to spend less time searching and more time listening, to discover new artists with upcoming shows in my area within an app (Spotify) I already use daily.
 
-# Ouline
-## 1. Scrape the venue calendar webpage using BeautifulSoup4
-## 2. Clean the data in python
-## 3. Build/update playlist(s) using Spotify API
+Unlike other show tracker apps, ShowQuester playlists showcase all artists with tour dates instead of only artists that I've added or liked. I specifically designed it to showcase every listing in the spirit of novelty and inclusivity. ShowQuester also takes the legwork out of finding audio or video to preview. Instead of tapping or clicking through the show tracker apps to listen to tracks (that often open in Spotify anyway,) I can simply hit 'play' and sit back to listen.
+
+Honestly, I got tired of waiting for Spotify to add this feature, so I coded it myself.
+
+# How it works
+## 1. Generate a list of upcoming shows for a venue
+I use the SongKick API and the python `requests` library to retrieve upcoming events.
+## 2. Find each artist on Spotify
+I use the python library `spotipy` to interact pythonically with the Spotify Web API
+## 3. Get each artist's top track on Spotify
+From the list of top tracks returned by `spotipy`'s `get_top_tracks`, I select the highest ranking track that is from an album credited to the artist.
+## 4. Create/update the venue's ShowQuester playlist
+I replace the old playlist tracks with the new list of tracks, and edit the playlist description to reflect the date the playlist was updated.
 
 # Venues
 - Designing first with Mississippi Studios
