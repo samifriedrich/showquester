@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
-
-
 ## Load libraries
 import os
 import spotipy
@@ -22,9 +19,6 @@ from fuzzywuzzy import fuzz
 from fuzzywuzzy import process
 
 from math import ceil as round_up
-
-
-# In[18]:
 
 
 #### FUNCTIONS
@@ -137,7 +131,6 @@ def create_sq_playlist(venue_name, venue_city, venue_state):
         print("Can't get token for", username)
         print(results)
 
-# search for artist and return artist object from Spotify
 def get_artist(search_str):
     """Search for an artist on Spotify and return artist object if found.
     
@@ -219,15 +212,9 @@ def update_playlist_details(playlist_id, playlist_name, playlist_descr):
         print("Can't get token for", username)
 
 
-# In[3]:
-
-
-# read in csv file containing venue info
+# Read in csv file containing venue info
 venue_info = pd.read_csv('venues.csv')
 venue_info
-
-
-# In[19]:
 
 
 ## Import API authorization keys from .bash_profile
@@ -253,10 +240,7 @@ token = util.prompt_for_user_token(
 sp = spotipy.Spotify(auth=token)
 
 
-# In[69]:
-
-
-## Main loop
+## Main loop to build playlists
 for idx, row in venue_info.iterrows():
     venue_name = row.venue_name
     venue_url = row.url
