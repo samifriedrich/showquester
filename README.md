@@ -19,7 +19,7 @@ All ShowQuester playlists can be found [here on my Spotify user page](https://op
 ### Authentication keys
 - Uses `dotenv` python module to import my secret API keys from .bash_profile
 
-## Why I made this 
+## Why I created ShowQuester 
 I love live shows. It's my favorite way to discover new bands and celebrate bands I already love. My old method of finding shows was to check the listings in my local paper, Google the bands, find a track or video, then decide if I wanted to buy a ticket. I developed SoundQuester as a way to spend less time searching and more time listening, to discover new artists with upcoming shows in my area within an app (Spotify) I already use daily.
 
 Unlike other show tracker apps, ShowQuester playlists showcase **all** artists with tour dates instead of only artists that I've added to my library or liked. I specifically designed it to showcase every performing artist in the spirit of novelty and inclusivity. ShowQuester also takes the legwork out of finding audio or video to preview. Instead of tapping or clicking through links in show tracker apps to listen to individual tracks (that often open in Spotify anyway,) I can simply hit 'play' and sit back to listen.
