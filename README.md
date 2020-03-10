@@ -1,10 +1,10 @@
 # ShowQuester
 A live music discovery tool that generates Spotify playlists showcasing artists (headliners & openers) with upcoming shows at live music venues.
 
-# How to access pre-existing ShowQuester playlists
+## How to access pre-existing ShowQuester playlists
 All ShowQuester playlists can be found [here on my Spotify user page](https://open.spotify.com/user/1237403078?si=5U16WCC1QliVyfa67_aMEA). 
 
-# How showquester.py works, in a nutshell
+## How showquester.py works, in a nutshell
 ### 1. Generate a list of upcoming shows posted to Songkick for the venue
 - Uses the SongKick API and the python `requests` library to retrieve upcoming events.
 ### 2. Find each performing artist on Spotify
@@ -19,14 +19,14 @@ All ShowQuester playlists can be found [here on my Spotify user page](https://op
 ### Authentication keys
 - Uses `dotenv` python module to import my secret API keys from .bash_profile
 
-# Why I made this 
+## Why I made this 
 I love live shows. It's my favorite way to discover new bands and celebrate bands I already love. My old method of finding shows was to check the listings in my local paper, Google the bands, find a track or video, then decide if I wanted to buy a ticket. I developed SoundQuester as a way to spend less time searching and more time listening, to discover new artists with upcoming shows in my area within an app (Spotify) I already use daily.
 
 Unlike other show tracker apps, ShowQuester playlists showcase **all** artists with tour dates instead of only artists that I've added to my library or liked. I specifically designed it to showcase every performing artist in the spirit of novelty and inclusivity. ShowQuester also takes the legwork out of finding audio or video to preview. Instead of tapping or clicking through links in show tracker apps to listen to individual tracks (that often open in Spotify anyway,) I can simply hit 'play' and sit back to listen.
 
 Honestly, I got tired of waiting for Spotify to add this feature, so I coded it myself.
 
-# Requirements
+## Requirements
 ### Access to 2 APIS
 1. [Spotify Web API](https://developer.spotify.com/documentation/web-api/) (requires that you have Spotify premium)
 2. [Songkick API ](https://www.songkick.com/developer)
@@ -43,7 +43,7 @@ The showquester.py uses the following modules:
 - fuzzywuzzy
 - math
 
-# FAQ
+## FAQ
 ### Q: I don't have Spotify Premium or a Songkick API key. Will you create a ShowQuester playlist for my favorite venue?
 ### A: Yes, I would be happy to.
 If you would like a venue added and don't want to go through the trouble of requesting API access to both Songkick and Spotify, please post an Issue and provide the following three items:
