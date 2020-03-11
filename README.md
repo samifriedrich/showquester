@@ -48,17 +48,16 @@ The showquester.py uses the following modules:
 - math
 
 ## FAQ
-### Q: I don't have Spotify Premium or a Songkick API key. Will you create a ShowQuester playlist for my favorite venue?
-### A: Yes, I would be happy to.
-If you would like a venue added and don't want to go through the trouble of requesting API access to both Songkick and Spotify, please post an Issue to this repository and provide the following three items:
+**Q: I don't have Spotify Premium or a Songkick API key. Will you create a ShowQuester playlist for my favorite venue?**
+
+**A: Yes, I would be happy to.** If you would like a venue added and don't want to go through the trouble of requesting API access to both Songkick and Spotify, please post an Issue to this repository and provide the following three items:
 1. The venue name
 2. The venue city, state, and country
 3. The venue website url
 
-### Q: Which venues already have playlists?
-### A: Take a look at `venues.csv` to see which venues I've already created ShowQuester playlists for.
+**Q: Which venues already have playlists?**
 
-I'll resolve the issue when the playlist has been created, and anyone can access it from my [public playlists(https://open.spotify.com/user/1237403078?si=5U16WCC1QliVyfa67_aMEA).
+**A: Take a look at `venues.csv` to see which venues I've already created ShowQuester playlists for.** I'll resolve the issue when the playlist has been created, and anyone can access it from my [public playlists(https://open.spotify.com/user/1237403078?si=5U16WCC1QliVyfa67_aMEA).
 
 ## Author
 Sami Friedrich, PhD candidate at Oregon Health and Science University
