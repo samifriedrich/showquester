@@ -34,7 +34,8 @@ Honestly, I got tired of waiting for Spotify to add this feature, so I coded it 
 ### Access to 2 APIS
 1. [Spotify Web API](https://developer.spotify.com/documentation/web-api/) (requires that you have Spotify premium)
 2. [Songkick API ](https://www.songkick.com/developer)
-Once you are granted access, store your API access keys in your .bash_profile or equivalent.
+
+I stored my API access keys as env variables in .bash_profile or equivalent.
 
 ### Python requirements
 The showquester.py uses the following modules:
@@ -55,9 +56,11 @@ The showquester.py uses the following modules:
 2. The venue city, state, and country
 3. The venue website url
 
+I'll resolve the issue when the playlist has been created, and anyone can access it from my [public playlists](https://open.spotify.com/user/1237403078?si=5U16WCC1QliVyfa67_aMEA).
+
 **Q: Which venues already have playlists?**
 
-**A: Take a look at `venues.csv` to see which venues I've already created ShowQuester playlists for.** I'll resolve the issue when the playlist has been created, and anyone can access it from my [public playlists](https://open.spotify.com/user/1237403078?si=5U16WCC1QliVyfa67_aMEA).
+**A: Take a look at `venues.csv` to see which venues I've already created ShowQuester playlists for.**
 
 ## Author
 Sami Friedrich, PhD candidate at Oregon Health and Science University
