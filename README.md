@@ -57,7 +57,7 @@ The showquester.py uses the following modules:
 
 **Q: Which venues already have playlists?**
 
-**A: Take a look at `venues.csv` to see which venues I've already created ShowQuester playlists for.** I'll resolve the issue when the playlist has been created, and anyone can access it from my [public playlists(https://open.spotify.com/user/1237403078?si=5U16WCC1QliVyfa67_aMEA).
+**A: Take a look at `venues.csv` to see which venues I've already created ShowQuester playlists for.** I'll resolve the issue when the playlist has been created, and anyone can access it from my [public playlists](https://open.spotify.com/user/1237403078?si=5U16WCC1QliVyfa67_aMEA).
 
 ## Author
 Sami Friedrich, PhD candidate at Oregon Health and Science University
