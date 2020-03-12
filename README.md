@@ -27,15 +27,13 @@ Honestly, I got tired of waiting for Spotify to add this feature, so I coded it 
 
 ### Automation
 - Uses `cron` utility to schedule my code to run weekly every Sunday.
-### Authentication keys
-- Uses `dotenv` python module to import my secret API keys from .bash_profile
+### 
+- API authentication keys are stored securely in my .bash_profile, and the `dotenv` python module allows me to import them from within a virtualenv.
 
 ## Requirements
-### Access to 2 APIS
+### API access
 1. [Spotify Web API](https://developer.spotify.com/documentation/web-api/) (requires that you have Spotify premium)
 2. [Songkick API ](https://www.songkick.com/developer)
-
-I stored my API access keys as env variables in .bash_profile or equivalent.
 
 ### Python requirements
 The showquester.py uses the following modules:
@@ -51,7 +49,7 @@ The showquester.py uses the following modules:
 ## FAQ
 **Q: I don't have Spotify Premium or a Songkick API key. Will you create a ShowQuester playlist for my favorite venue?**
 
-**A: Yes, I would be happy to.** If you would like a venue added and don't want to go through the trouble of requesting API access to both Songkick and Spotify, please post an Issue to this repository and provide the following three items:
+A: Yes, I would be happy to. If you would like a venue added and don't want to go through the trouble of requesting API access to both Songkick and Spotify, please post an Issue to this repository and provide the following three items:
 1. The venue name
 2. The venue city, state, and country
 3. The venue website url
@@ -60,7 +58,7 @@ I'll resolve the issue when the playlist has been created, and anyone can access
 
 **Q: Which venues already have playlists?**
 
-**A: Take a look at `venues.csv` to see which venues I've already created ShowQuester playlists for.**
+A: Take a look at `venues.csv` to see which venues I've already created ShowQuester playlists for.
 
 ## Author
 Sami Friedrich, PhD candidate at Oregon Health and Science University
