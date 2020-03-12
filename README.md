@@ -1,15 +1,19 @@
 # ShowQuester
-A live music discovery tool that generates Spotify playlists showcasing artists (headliners & openers) with upcoming shows at live music venues.
+A live music discovery tool that generates Spotify playlists showcasing artists with upcoming shows at live music venues.
 
-## How to access pre-existing ShowQuester playlists
-All ShowQuester playlists can be found [here on my Spotify user page](https://open.spotify.com/user/1237403078?si=5U16WCC1QliVyfa67_aMEA). 
+### Access pre-existing ShowQuester playlists
+All ShowQuester playlists can be found [here on my Spotify user page](https://open.spotify.com/user/1237403078?si=5U16WCC1QliVyfa67_aMEA). All venues with ShowQuester playlists are listed in `venues.csv`.
 
 ## Why I created ShowQuester 
-I love experiencing music live. It's my favorite way to discover new bands and celebrate bands I already love. My old strategy for finding shows in my city was to check the listings in my local paper, Google the bands, find a track or video, then decide if I wanted to buy a ticket. I developed SoundQuester as a way to spend less time searching and more time listening, to discover new artists with upcoming shows in my area within an app (Spotify) I already use daily.
+I developed SoundQuester **to discover new artists with upcoming shows at local venues** within an app (Spotify) I already use daily.
 
-Unlike other show tracker apps, ShowQuester playlists showcase **all** artists with tour dates instead of only those artists that I've added to my library or liked. I specifically designed it to showcase every performing artist in the spirit of novelty and inclusivity. ShowQuester also takes the legwork out of finding audio or video to preview. Instead of tapping or clicking through links in show tracker apps to listen to individual songs (that often open in Spotify anyway,) I can simply hit 'play' and sit back to listen.
+I love experiencing live music. It's my favorite way to discover new bands as well as celebrate bands I already love. My old strategy for finding shows in my city was to check the listings in my local paper, Google the bands, and click through to a track or video before deciding whether to buy a ticket. This strategy was enjoyable but time consuming, and I got tired of waiting for Spotify to add a live music discovery feature*, so **I built my own live music discovery tool.**
 
-Honestly, I got tired of waiting for Spotify to add this feature, so I coded it myself.
+*Note: Spotify did release their Concerts module as I was developing ShowQuester, but that module still didn't provide me what I wanted - a playlist of upcoming artists.
+
+**I specifically designed ShowQuester to showcase *every* performing artist (including openers) in the spirit of novelty and inclusivity.** Unlike other show trackers, ShowQuester playlists feature all artists booked at a venue instead of only those artists that I've added to my library or liked/followed. 
+
+**ShowQuester also takes the legwork out of finding audio or video to preview**. Instead of tapping or clicking through links in show tracker apps to listen to individual songs (that often open in Spotify anyway,) I can simply hit 'play' and sit back to listen.
 
 ## How showquester.py works, in a nutshell
 **1. Generate a list of upcoming shows posted to Songkick for the venue**
@@ -27,8 +31,8 @@ Honestly, I got tired of waiting for Spotify to add this feature, so I coded it 
 
 ### Automation
 - Uses `cron` utility to schedule my code to run weekly every Sunday.
-### 
-- API authentication keys are stored securely in my .bash_profile, and the `dotenv` python module allows me to import them from within a virtualenv.
+### API credentials
+- API credentials are stored securely in my .bash_profile, and the `dotenv` python module allows me to import them from within a virtualenv.
 
 ## Requirements
 ### API access
@@ -66,5 +70,4 @@ Sami Friedrich, PhD candidate at Oregon Health and Science University
  
 ## License
 This project is licensed under the MIT License - see the [LICENSE.md](https://github.com/samifriedrich/showquester/blob/master/LICENSE) file for details.
-
 
