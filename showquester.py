@@ -79,90 +79,71 @@ def events_df(event_list):
 def get_my_public_playlists(username):
     """Returns a dictionary of public playlist names (keys) and their uri's (values) for the given username."""
     my_playlists = {}
-    if token:
-        sp = spotipy.Spotify(auth=token)
-        sp.trace = False
-        results = sp.user_playlists(username)
-        
-        while results:
-            for playlist in results['items']:
-                if playlist['public']:
-                    my_playlists[playlist['name']] = playlist['uri']
-            if results['next']:
-                results = sp.next(results)
-            else:
-                results = None
-        return my_playlists
-    else:
-        print("Can't get token for", username)
-        print(results)
+    results = sp.user_playlists(username)
+
+    while results:
+        for playlist in results['items']:
+            if playlist['public']:
+                my_playlists[playlist['name']] = playlist['uri']
+        if results['next']:
+            results = sp.next(results)
+        else:
+            results = None
+    return my_playlists
+
 
 def create_sq_playlist(venue_name, venue_city, venue_state): 
     """Create an empty Showquester playlist on Spotify for a given venue"""
     playlist_name = f"ShowQuester: {venue_name} ({venue_city}, {venue_state})"
-    if token:
-        sp = spotipy.Spotify(auth=token)
-        sp.trace = False
-        results = sp.user_playlist_create(username, playlist_name, public=True)
-        playlist_uri = results['uri']
-        print(f'Created playlist "{playlist_name}"')
-        return [playlist_name, playlist_uri]
-    else:
-        print("Can't get token for", username)
-        print(results)
+    results = sp.user_playlist_create(username, playlist_name, public=True)
+    playlist_uri = results['uri']
+    print(f'Created playlist "{playlist_name}"')
+    return [playlist_name, playlist_uri]
+
 
 def get_artist(search_str):
     """Search for an artist on Spotify and return artist object if found.
     
     Uses fuzzywuzzy's process.extractOne convenience function to parse search results for best match."""
-    if token:
-        sp = spotipy.Spotify(auth=token)
-        sp.trace = False
-        results = sp.search(search_str,type='artist')
-    
-        if results['artists']['total'] > 0:
-            items = results['artists']['items']
-            hits = {}
-            for artist in items:
-                hits[artist['uri']] = artist['name']
+    results = sp.search(search_str,type='artist')
 
-            best_hit = process.extractOne(search_str, hits)
-            best_hit_uri = best_hit[2]
-            artist_obj = sp.artist(best_hit_uri)
-            return artist_obj
-        else:
-            print(f'\t\"{search_str}\" was not found on Spotify.')
-            return None
+    if results['artists']['total'] > 0:
+        items = results['artists']['items']
+        hits = {}
+        for artist in items:
+            hits[artist['uri']] = artist['name']
+
+        best_hit = process.extractOne(search_str, hits)
+        best_hit_uri = best_hit[2]
+        artist_obj = sp.artist(best_hit_uri)
+        return artist_obj
     else:
-        print("Can't get token for", username)
+        print(f'\t\"{search_str}\" was not found on Spotify.')
+        return None
+
         
 def get_top_track(artist_uri):
     """Return top track uri for a given artist on Spotify."""
-    if token:
-        sp = spotipy.Spotify(auth=token)
-        sp.trace = False
-        results = sp.artist_top_tracks(artist_uri)
-        top_tracks = results['tracks']
-        top_track = []
-        if top_tracks:
-            for track in top_tracks:
-                # find first top track on an album primarily credited to artist
-                album_artist = track['album']['artists'][0]['uri']
-                if album_artist == artist_uri:
-                    top_track = track['uri']
-                    return top_track
-                    break
-                else:
-                    continue
-            if not top_track:
-                top_track_uri = top_tracks[0]['uri']
-                print(f"\tCheck {artist_uri}'s top track: {top_track_uri}")
-                return top_track_uri
-        else:
-            artist_name = sp.artist(artist_uri)['name']
-            print(f'\tNOT FOUND: No tracks found for {artist_name}')
+    results = sp.artist_top_tracks(artist_uri)
+    top_tracks = results['tracks']
+    top_track = []
+    if top_tracks:
+        for track in top_tracks:
+            # find first top track on an album primarily credited to artist
+            album_artist = track['album']['artists'][0]['uri']
+            if album_artist == artist_uri:
+                top_track = track['uri']
+                return top_track
+                break
+            else:
+                continue
+        if not top_track:
+            top_track_uri = top_tracks[0]['uri']
+            print(f"\tCheck {artist_uri}'s top track: {top_track_uri}")
+            return top_track_uri
     else:
-        print("Can't get token for", username)
+        artist_name = sp.artist(artist_uri)['name']
+        print(f'\tNOT FOUND: No tracks found for {artist_name}')
 
 def chunks(lst, n):
     """Yield successive n-sized chunks from lst."""
@@ -181,20 +162,15 @@ def update_playlist_details(playlist_id, playlist_name, playlist_descr):
     
     NOTE: There are several reports of issues when updating playlist descriptions in the Spotify community.
     Currently, it seems the only solution is to wait for the server to update, which could take a day."""
-    if token:
-        sp = spotipy.Spotify(auth=token)
-        sp.trace = False
-        results = sp.user_playlist_change_details(
-                username, playlist_id=playlist_id, name=playlist_name, description=playlist_descr)
-        #print(f'Updated playlist "{playlist_name}"')
-        return results
-    else:
-        print("Can't get token for", username)
-
+    results = sp.user_playlist_change_details(
+            username, playlist_id=playlist_id, name=playlist_name, description=playlist_descr)
+    #print(f'Updated playlist "{playlist_name}"')
+    return results
+   
 
 # Read in csv file containing venue info
 venue_info = pd.read_csv('venues.csv')
-venue_info
+venue_info = venue_info[:3]
 
 
 ## Set API authorization keys
