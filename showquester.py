@@ -5,28 +5,20 @@
 import os
 import spotipy
 import spotipy.util as util
-
 import requests
 import pandas as pd
-
 import datetime
-
-# use dotenv to load environmental variables set in .bash_profile
 from dotenv import load_dotenv
-load_dotenv()
-
 from fuzzywuzzy import fuzz
 from fuzzywuzzy import process
-
 from math import ceil as round_up
 
 
-#### FUNCTIONS
+## Functions
 
 def get_venue_id(venue_name, venue_city): 
     """Search for venue and retrieve id on Songkick.
     
-    NOTE: Venue name must exactly match for the search to be successful (this seems to be how SK API operates.)
     To handle duplicate venue names, this function will check that venue's city matches that entered in venues.csv"""
     req = f'https://api.songkick.com/api/3.0/search/venues.json?query={venue_name}&apikey={sk_api_key}'
     response = requests.get(req)
@@ -51,23 +43,16 @@ def get_venue_events(venue_id):
     """Returns a list of upcoming event objects from Songkick for a given venue."""
     req = f'https://api.songkick.com/api/3.0/venues/{venue_id}/calendar.json?apikey={sk_api_key}'
     response = requests.get(req)
-    # get number of events per page
-    per_page = response.json()['resultsPage']['perPage']
-    # get total number of events
-    total_entries = response.json()['resultsPage']['totalEntries']
-    # if multiple pages of events
-    if total_entries > per_page:
-        # calculate number of pages
-        pages = round_up(total_entries/per_page)
-        # save first page of results to venue_events
+    num_results_per_page = response.json()['resultsPage']['perPage']
+    total_num_results = response.json()['resultsPage']['totalEntries']
+    if total_num_results > num_results_per_page:
+        num_results_pages = round_up(total_num_results/num_results_per_page)
         venue_events = response.json()['resultsPage']['results']['event']
+        for page_num in range(2, num_results_pages+1):
         # get subsequent pages of results
-        for page_num in range(2, pages+1):
-            # request next page of events
             req = f'https://api.songkick.com/api/3.0/venues/{venue_id}/calendar.json?apikey={sk_api_key}&page={page_num}'
             response = requests.get(req)
             page_events = response.json()['resultsPage']['results']['event']
-            # add to venue_events list
             venue_events.extend(page_events)
     else:
         venue_events = response.json()['resultsPage']['results']['event']
@@ -81,17 +66,12 @@ def events_df(event_list):
     artists = []
     ids = []
     for event in event_list:
-
-        # get performers
         performance = event['performance']
         num_performers = len(performance)
-        # add to artists list
         for artist in performance:
             artists.append(artist['displayName'])
             ids.append(artist['id'])
-        # get date
         event_date = event['start']['date']
-        # add to dates list, once for each performer
         dates.extend([event_date] * num_performers)
         
     return pd.DataFrame(data={'artist':artists, 'date':dates, 'artist_id':ids})
@@ -193,7 +173,7 @@ def build_playlist_description(venue_name, venue_url, venue_city, venue_state):
     """Create description for ShowQuester playlist."""
     todays_date = datetime.date.today()
     github_url = "https://github.com/samifriedrich/showquester"
-    descr = f'A programmatically-generated playlist featuring artists coming soon to {venue_name} in {venue_city}, {venue_state}. Ordered by date, with this week up top and events farther in the future at the bottom. Updated {todays_date}. Go to {venue_url} for tickets. Check out my GitHub for details on how this playlist is generated: [COMING SOON]'
+    descr = f"A programmatically-generated playlist featuring artists coming soon to {venue_name} in {venue_city}, {venue_state}. Updated {todays_date}. Ordered by date, with this week up top and events farther in the future at the bottom. Go to https://www.songkick.com/ for tickets and {venue_url} for more info. Check out my GitHub for details on how this playlist is generated: https://github.com/samifriedrich/showquester/"
     return descr
 
 def update_playlist_details(playlist_id, playlist_name, playlist_descr): 
@@ -217,7 +197,9 @@ venue_info = pd.read_csv('venues.csv')
 venue_info
 
 
-## Import API authorization keys from .bash_profile
+## Set API authorization keys
+# access .bash_profile from inside virtualenv
+load_dotenv()
 # Songkick API
 sk_api_key = os.environ.get('SONGKICK_API_KEY')
 
@@ -225,11 +207,9 @@ sk_api_key = os.environ.get('SONGKICK_API_KEY')
 client_id = os.environ.get('SPOTIFY_CLIENT_ID')
 client_secret = os.environ.get('SPOTIFY_CLIENT_SECRET')
 username = os.environ.get('SPOTIFY_USERNAME')
-# try reducing this scope and seeing if get_playlists() still works
 scope = 'playlist-modify-public'
-#scope = 'user-library-read playlist-modify-private playlist-modify-public playlist-read-private'
 
-# Retrieve Spotify authentication token
+# retrieve Spotify authentication token
 token = util.prompt_for_user_token(
         username=username,
         scope=scope,
@@ -255,7 +235,6 @@ for idx, row in venue_info.iterrows():
         # remove exact duplicates from list of artists
         artist_list = list(process.dedupe(artist_list, threshold=99, scorer=fuzz.token_sort_ratio))
         
-        # get playlist names and uris
         my_playlists = get_my_public_playlists(username)
         # search playlists for a SoundQuester venue playlist
         venue_playlist = [(name, uri) for name, uri in my_playlists.items() if venue_name in name]
@@ -312,4 +291,3 @@ for idx, row in venue_info.iterrows():
         results = update_playlist_details(playlist_id, playlist_name, playlist_descr)
         
         print(f"COMPLETED: {venue_name}\n\n")
-
