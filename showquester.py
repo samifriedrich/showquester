@@ -13,12 +13,11 @@ from fuzzywuzzy import fuzz
 from fuzzywuzzy import process
 from math import ceil as round_up
 
-
 ## Functions
 
-def get_venue_id(venue_name, venue_city): 
+def get_venue_id(venue_name, venue_city):
     """Search for venue and retrieve id on Songkick.
-    
+
     To handle duplicate venue names, this function will check that venue's city matches that entered in venues.csv"""
     req = f'https://api.songkick.com/api/3.0/search/venues.json?query={venue_name}&apikey={sk_api_key}'
     response = requests.get(req)
@@ -59,7 +58,6 @@ def get_venue_events(venue_id):
 
     return venue_events
 
-
 def events_df(event_list):
     """Creates a dataframe out of Songkick events results"""
     dates = []
@@ -73,7 +71,7 @@ def events_df(event_list):
             ids.append(artist['id'])
         event_date = event['start']['date']
         dates.extend([event_date] * num_performers)
-        
+
     return pd.DataFrame(data={'artist':artists, 'date':dates, 'artist_id':ids})
 
 def get_my_public_playlists(username):
@@ -91,8 +89,7 @@ def get_my_public_playlists(username):
             results = None
     return my_playlists
 
-
-def create_sq_playlist(venue_name, venue_city, venue_state): 
+def create_sq_playlist(venue_name, venue_city, venue_state):
     """Create an empty Showquester playlist on Spotify for a given venue"""
     playlist_name = f"ShowQuester: {venue_name} ({venue_city}, {venue_state})"
     results = sp.user_playlist_create(username, playlist_name, public=True)
@@ -100,10 +97,9 @@ def create_sq_playlist(venue_name, venue_city, venue_state):
     print(f'Created playlist "{playlist_name}"')
     return [playlist_name, playlist_uri]
 
-
 def get_artist(search_str):
     """Search for an artist on Spotify and return artist object if found.
-    
+
     Uses fuzzywuzzy's process.extractOne convenience function to parse search results for best match."""
     results = sp.search(search_str,type='artist')
 
@@ -121,7 +117,6 @@ def get_artist(search_str):
         print(f'\t\"{search_str}\" was not found on Spotify.')
         return None
 
-        
 def get_top_track(artist_uri):
     """Return top track uri for a given artist on Spotify."""
     results = sp.artist_top_tracks(artist_uri)
@@ -157,21 +152,19 @@ def build_playlist_description(venue_name, venue_url, venue_city, venue_state):
     descr = f"A programmatically-generated playlist featuring artists coming soon to {venue_name} in {venue_city}, {venue_state}. Updated {todays_date}. Ordered by date, with this week up top and events farther in the future at the bottom. Go to https://www.songkick.com/ for tickets and {venue_url} for more info. Check out my GitHub for details on how this playlist is generated: https://github.com/samifriedrich/showquester/"
     return descr
 
-def update_playlist_details(playlist_id, playlist_name, playlist_descr): 
+def update_playlist_details(playlist_id, playlist_name, playlist_descr):
     """Updates playlist details.
-    
+
     NOTE: There are several reports of issues when updating playlist descriptions in the Spotify community.
     Currently, it seems the only solution is to wait for the server to update, which could take a day."""
     results = sp.user_playlist_change_details(
             username, playlist_id=playlist_id, name=playlist_name, description=playlist_descr)
     #print(f'Updated playlist "{playlist_name}"')
     return results
-   
 
 # Read in csv file containing venue info
 venue_info = pd.read_csv('venues.csv')
 venue_info = venue_info[:3]
-
 
 ## Set API authorization keys
 # access .bash_profile from inside virtualenv
@@ -195,7 +188,6 @@ token = util.prompt_for_user_token(
 
 sp = spotipy.Spotify(auth=token)
 
-
 ## Main loop to build playlists
 for idx, row in venue_info.iterrows():
     venue_name = row.venue_name
@@ -203,14 +195,14 @@ for idx, row in venue_info.iterrows():
     venue_city, venue_state = row.location.split(', ')
     print(f"*****************{venue_name}*******************")
     venue_id = get_venue_id(venue_name, venue_city)
-    
+
     if venue_id:
         event_list = get_venue_events(venue_id)
         shows = events_df(event_list)
         artist_list = list(shows.artist)
         # remove exact duplicates from list of artists
         artist_list = list(process.dedupe(artist_list, threshold=99, scorer=fuzz.token_sort_ratio))
-        
+
         my_playlists = get_my_public_playlists(username)
         # search playlists for a SoundQuester venue playlist
         venue_playlist = [(name, uri) for name, uri in my_playlists.items() if venue_name in name]
@@ -222,16 +214,16 @@ for idx, row in venue_info.iterrows():
         # if venue playlist missing, create new SoundQuester playlist
             print(f'No playlist found for "{venue_name}"')
             playlist_name, playlist_uri = create_sq_playlist(venue_name, venue_city, venue_state)
-        
+
         # derive playlist_id from playlist_uri
         playlist_id = playlist_uri.split(':')[2]
-        
+
         # retrieve all artist objects for performing artists
         artist_obj = []
         print("...SEARCHING Spotify for ARTISTS...")
         for artist in artist_list:
             artist_obj.append(get_artist(artist))
-        
+
         # pull one top track per artist to be added to playlist
         tracks_to_add = []
         print("...SEARCHING Spotify for TOP TRACKS...")
@@ -240,14 +232,14 @@ for idx, row in venue_info.iterrows():
                 artist_uri = artist['uri']
                 track = get_top_track(artist_uri)
                 tracks_to_add.append(track)
-                
+
         # filter out empty strings where no track was found
         tracks_to_add = list(filter(None, tracks_to_add))
         # batch tracks into 100's to respect Spotify Web API limits
         track_batches = list(chunks(tracks_to_add, 100))
-        
+
         print('...UPDATING SHOWQUESTER PLAYLIST TRACKS...')
-        for i in range(0,len(track_batches)):  
+        for i in range(0,len(track_batches)):
             track_uris = track_batches[i]
             if i == 0:
             # if first batch, replace playlist with first batch of tracks
@@ -261,9 +253,9 @@ for idx, row in venue_info.iterrows():
                     sp = spotipy.Spotify(auth=token)
                     sp.trace = False
                     results = sp.user_playlist_add_tracks(username, playlist_id, track_uris)
-        
+
         print('...UPDATING SHOWQUESTER PLAYLIST DESCRIPTION...')
         playlist_descr = build_playlist_description(venue_name, venue_url, venue_city, venue_state)
         results = update_playlist_details(playlist_id, playlist_name, playlist_descr)
-        
+
         print(f"COMPLETED: {venue_name}\n\n")
