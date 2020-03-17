@@ -59,18 +59,23 @@ def get_venue_events(venue_id):
     return venue_events
 
 def events_df(event_list):
-    """Creates a dataframe out of Songkick events results"""
+    """Creates a dataframe out of Songkick events results
+
+    Excludes events flagged on Songkick as 'cancelled'."""
     dates = []
     artists = []
     ids = []
     for event in event_list:
-        performance = event['performance']
-        num_performers = len(performance)
-        for artist in performance:
-            artists.append(artist['displayName'])
-            ids.append(artist['id'])
-        event_date = event['start']['date']
-        dates.extend([event_date] * num_performers)
+        status = event['status']
+        cancelled = status == "cancelled"
+        if not cancelled:
+            performance = event['performance']
+            num_performers = len(performance)
+            for artist in performance:
+                artists.append(artist['displayName'])
+                ids.append(artist['id'])
+            event_date = event['start']['date']
+            dates.extend([event_date] * num_performers)
 
     return pd.DataFrame(data={'artist':artists, 'date':dates, 'artist_id':ids})
 
