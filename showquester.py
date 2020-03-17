@@ -246,17 +246,9 @@ for idx, row in venue_info.iterrows():
         for i in range(0,len(track_batches)):
             track_uris = track_batches[i]
             if i == 0:
-            # if first batch, replace playlist with first batch of tracks
-                if token:
-                    sp = spotipy.Spotify(auth=token)
-                    sp.trace = False
-                    result = sp.user_playlist_replace_tracks(username, playlist_id, track_uris)
+                result = sp.user_playlist_replace_tracks(username, playlist_id, track_uris)
             else:
-            # if not first batch, add to playlist instead of replacing
-                if token:
-                    sp = spotipy.Spotify(auth=token)
-                    sp.trace = False
-                    results = sp.user_playlist_add_tracks(username, playlist_id, track_uris)
+                results = sp.user_playlist_add_tracks(username, playlist_id, track_uris)
 
         print('...UPDATING SHOWQUESTER PLAYLIST DESCRIPTION...')
         playlist_descr = build_playlist_description(venue_name, venue_url, venue_city, venue_state)
