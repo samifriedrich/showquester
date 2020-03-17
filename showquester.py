@@ -164,7 +164,6 @@ def update_playlist_details(playlist_id, playlist_name, playlist_descr):
 
 # Read in csv file containing venue info
 venue_info = pd.read_csv('venues.csv')
-venue_info = venue_info[:3]
 
 ## Set API authorization keys
 # access .bash_profile from inside virtualenv
