@@ -26,11 +26,12 @@ def get_venue_id(venue_name, venue_city):
     if num_results > 0:
         results = response.json()['resultsPage']['results']['venue']
         for hit in results:
+            result_state = hit['city']['state']['displayName']
             result_city = hit['city']['displayName']
             if result_city == venue_city:
                 venue_id = hit['id']
-                displayName = hit['displayName']
-                print(f'Found {venue_name} in {venue_city}, {venue_state} on Songkick')
+                sk_venue_name = hit['displayName']
+                print(f'Found {sk_venue_name} in {result_city}, {result_state} on Songkick')
                 return venue_id
                 break
             else:
@@ -193,65 +194,70 @@ token = util.prompt_for_user_token(
 sp = spotipy.Spotify(auth=token)
 
 ## Main loop to build playlists
-for idx, row in venue_info.iterrows():
-    venue_name = row.venue_name
-    venue_url = row.url
-    venue_city, venue_state = row.location.split(', ')
-    print(f"*****************{venue_name}*******************")
-    venue_id = get_venue_id(venue_name, venue_city)
+def main():
+    print("\n>>> ShowQuester started. Processing venues in venues.csv\n")
+    for idx, row in venue_info.iterrows():
+        venue_name = row.venue_name
+        venue_url = row.url
+        venue_city, venue_state = row.location.split(', ')
+        print(f"*****************{venue_name}*******************")
+        venue_id = get_venue_id(venue_name, venue_city)
 
-    if venue_id:
-        event_list = get_venue_events(venue_id)
-        shows = events_df(event_list)
-        artist_list = list(shows.artist)
-        # remove exact duplicates from list of artists
-        artist_list = list(process.dedupe(artist_list, threshold=99, scorer=fuzz.token_sort_ratio))
+        if venue_id:
+            event_list = get_venue_events(venue_id)
+            shows = events_df(event_list)
+            artist_list = list(shows.artist)
+            # remove exact duplicates from list of artists
+            artist_list = list(process.dedupe(artist_list, threshold=99, scorer=fuzz.token_sort_ratio))
 
-        my_playlists = get_my_public_playlists(username)
-        # search playlists for a SoundQuester venue playlist
-        venue_playlist = [(name, uri) for name, uri in my_playlists.items() if venue_name in name]
+            my_playlists = get_my_public_playlists(username)
+            # search playlists for a SoundQuester venue playlist
+            venue_playlist = [(name, uri) for name, uri in my_playlists.items() if venue_name in name]
 
-        if venue_playlist:
-            playlist_name, playlist_uri = venue_playlist[0]
-            print(f'Found ShowQuester playlist for {venue_name} named "{playlist_name}"')
-        else:
-        # if venue playlist missing, create new SoundQuester playlist
-            print(f'No playlist found for "{venue_name}"')
-            playlist_name, playlist_uri = create_sq_playlist(venue_name, venue_city, venue_state)
-
-        # derive playlist_id from playlist_uri
-        playlist_id = playlist_uri.split(':')[2]
-
-        # retrieve all artist objects for performing artists
-        artist_obj = []
-        print("...SEARCHING Spotify for ARTISTS...")
-        for artist in artist_list:
-            artist_obj.append(get_artist(artist))
-
-        # pull one top track per artist to be added to playlist
-        tracks_to_add = []
-        print("...SEARCHING Spotify for TOP TRACKS...")
-        for artist in artist_obj:
-            if artist is not None:
-                artist_uri = artist['uri']
-                track = get_top_track(artist_uri)
-                tracks_to_add.append(track)
-
-        # filter out empty strings where no track was found
-        tracks_to_add = list(filter(None, tracks_to_add))
-        # batch tracks into 100's to respect Spotify Web API limits
-        track_batches = list(chunks(tracks_to_add, 100))
-
-        print('...UPDATING SHOWQUESTER PLAYLIST TRACKS...')
-        for i in range(0,len(track_batches)):
-            track_uris = track_batches[i]
-            if i == 0:
-                result = sp.user_playlist_replace_tracks(username, playlist_id, track_uris)
+            if venue_playlist:
+                playlist_name, playlist_uri = venue_playlist[0]
+                print(f'Found ShowQuester playlist for {venue_name} named "{playlist_name}"')
             else:
-                results = sp.user_playlist_add_tracks(username, playlist_id, track_uris)
+            # if venue playlist missing, create new SoundQuester playlist
+                print(f'No playlist found for "{venue_name}"')
+                playlist_name, playlist_uri = create_sq_playlist(venue_name, venue_city, venue_state)
 
-        print('...UPDATING SHOWQUESTER PLAYLIST DESCRIPTION...')
-        playlist_descr = build_playlist_description(venue_name, venue_url, venue_city, venue_state)
-        results = update_playlist_details(playlist_id, playlist_name, playlist_descr)
+            # derive playlist_id from playlist_uri
+            playlist_id = playlist_uri.split(':')[2]
 
-        print(f"COMPLETED: {venue_name}\n\n")
+            # retrieve all artist objects for performing artists
+            artist_obj = []
+            print("...SEARCHING Spotify for ARTISTS...")
+            for artist in artist_list:
+                artist_obj.append(get_artist(artist))
+
+            # pull one top track per artist to be added to playlist
+            tracks_to_add = []
+            print("...SEARCHING Spotify for TOP TRACKS...")
+            for artist in artist_obj:
+                if artist is not None:
+                    artist_uri = artist['uri']
+                    track = get_top_track(artist_uri)
+                    tracks_to_add.append(track)
+
+            # filter out empty strings where no track was found
+            tracks_to_add = list(filter(None, tracks_to_add))
+            # batch tracks into 100's to respect Spotify Web API limits
+            track_batches = list(chunks(tracks_to_add, 100))
+
+            print('...UPDATING SHOWQUESTER PLAYLIST TRACKS...')
+            for i in range(0,len(track_batches)):
+                track_uris = track_batches[i]
+                if i == 0:
+                    result = sp.user_playlist_replace_tracks(username, playlist_id, track_uris)
+                else:
+                    results = sp.user_playlist_add_tracks(username, playlist_id, track_uris)
+
+            print('...UPDATING SHOWQUESTER PLAYLIST DESCRIPTION...')
+            playlist_descr = build_playlist_description(venue_name, venue_url, venue_city, venue_state)
+            results = update_playlist_details(playlist_id, playlist_name, playlist_descr)
+
+            print(f"COMPLETED: {venue_name}\n\n")
+
+if __name__ == "__main__":
+    main()
