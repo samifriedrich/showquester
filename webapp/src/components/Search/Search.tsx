@@ -4,8 +4,6 @@ import { useState } from 'react';
 
 import { Venue } from '../../models/venue'
 
-import styles from './Search.module.scss'
-
 const Search = (props: {handleVenueSearch: (arg0: Venue) => void}) => {
 
   const [name, setVenueName] = useState('');
@@ -14,13 +12,20 @@ const Search = (props: {handleVenueSearch: (arg0: Venue) => void}) => {
   return (
     <Flex
       as='form'
-      className={styles.search}
       onSubmit={e => e.preventDefault()}
       sx={{
-        'flexDirection': ['column', 'column', 'row'],
+        flexDirection: ['column', 'column', 'row'],
+        width: ['90%', '80%', '100%'],
+        justifyContent: 'center',
+        alignItems: ['flex-start', 'flex-start', 'flex-end'],
       }}
     >
-      <Box className={styles.inputContainer}>
+      <Box
+        sx={{
+          mr: '4',
+          mb: ['3', '3', '0'],
+        }}
+      >
         <Label htmlFor="name">Venue Name</Label>
         <Input
           name="name"
@@ -30,7 +35,12 @@ const Search = (props: {handleVenueSearch: (arg0: Venue) => void}) => {
         />
       </Box>
 
-      <Box className={styles.inputContainer}>
+      <Box
+        sx={{
+          mr: '4',
+          mb: ['3', '3', '0'],
+        }}
+      >
         <Label htmlFor="location">Location</Label>
         <Input
           name="location"
@@ -43,6 +53,9 @@ const Search = (props: {handleVenueSearch: (arg0: Venue) => void}) => {
       <Button
         sx={{
           variant: !name || !location ? 'buttons.disabled' : 'buttons.primary',
+          '&:hover': {
+            variant: !name || !location ? 'buttons.disabled' : 'buttons.primary.hover',
+          }
         }}
         type="submit"
         disabled={!name || !location}

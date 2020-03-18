@@ -7,6 +7,7 @@ export default {
     4,
     8,
     16,
+    24,
     32,
     64,
     128,
@@ -47,7 +48,7 @@ export default {
     bold: 700
   },
   lineHeights: {
-    body: 1.75,
+    body: 1.5,
     heading: 1.25
   },
   colors: {
@@ -59,7 +60,7 @@ export default {
     muted: '#e6e6e6',
     gray: '#dfe3e8',
     accent: '#f49342',
-    darken: '#00044c',
+    darken: '#4454bb',
     modes: {
       dark: {
         text: '#3e4155',
@@ -77,6 +78,13 @@ export default {
       bg: 'primary',
       height: '5',
       fontWeight: 'bold',
+      hover: {
+        color: 'white',
+        bg: 'darken',
+        height: '5',
+        fontWeight: 'bold',
+        cursor: 'pointer',
+      },
       outline: {
         color: 'primary',
         bg: 'white',
@@ -84,6 +92,15 @@ export default {
         borderWidth: '2px',
         borderStyle: 'solid',
         borderColor: 'primary',
+        hover: {
+          color: 'darken',
+          bg: 'white',
+          height: '5',
+          borderWidth: '2px',
+          borderStyle: 'solid',
+          borderColor: 'darken',
+          cursor: 'pointer',
+        },
       },
     },
     secondary: {
@@ -120,7 +137,7 @@ export default {
     },
     input: {
       borderColor: 'gray',
-      width: [125, 125, 225, 300],
+      width: ['90vw', '80vw', 225, 300],
 
       '&:focus': {
         borderColor: 'primary',
@@ -129,4 +146,10 @@ export default {
       },
     },
   },
+  flex: {
+    center: {
+      alignItems: 'center',
+      justifyContent: 'center',
+    }
+  }
 }

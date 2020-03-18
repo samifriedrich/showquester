@@ -1,11 +1,12 @@
 ## ShowQuester Web App
 
-## Getting Started
+## Development
 
 First, `cd` into the `webapp` directory and run the development server:
 
 ```bash
 $ cd webapp
+$ npm install
 $ npm run dev
 ```
 

@@ -1,13 +1,42 @@
+/** @jsx jsx */
+import { jsx, Flex, NavLink } from 'theme-ui'
 import Link from 'next/link'
-import { NavLink } from 'theme-ui'
-
-import styles from './Footer.module.scss'
 
 const Footer = () => (
-    <div className={styles.footer}>
-        <Link href="/"><NavLink className={styles.footer__link}>Search</NavLink></Link>
-        <Link href="/about"><NavLink className={styles.footer__link}>About</NavLink></Link>
-    </div>
+  <Flex
+    sx={{
+      width: '100%',
+      height: '4',
+      alignItems: 'center',
+      justifyContent: 'flex-end',
+      mb: '3',
+    }}
+  >
+    <Link href="/">
+      <NavLink
+        sx={{
+          pr: '4',
+          '&:hover': {
+            cursor: 'pointer',
+          }
+        }}
+      >
+        Search
+      </NavLink>
+      </Link>
+    <Link href="/about">
+      <NavLink
+        sx={{
+          pr: '6',
+          '&:hover': {
+            cursor: 'pointer',
+          }
+        }}
+      >
+        About
+      </NavLink>
+    </Link>
+  </Flex>
 );
 
 export default Footer;

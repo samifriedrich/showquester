@@ -40,7 +40,7 @@ const Home = () => {
     <Layout>
       <div
         sx={{
-          mt: ['10vh', '25vh'],
+          mt: ['5vh', '25vh'],
           mx: 'auto',
         }}
       >
@@ -66,9 +66,9 @@ const Home = () => {
           {venueError && 
             <Flex
               sx={{
-                my: '5',
-                px: '4',
-                py: '3',
+                my: '6',
+                px: '5',
+                py: '4',
                 variant: 'borders.muted',
               }}
             >
@@ -78,14 +78,16 @@ const Home = () => {
           {!venueError && venueSearchParams && !venueData &&
             <Flex
               sx={{
-                my: '5',
-                px: '4',
-                py: '3',
+                my: '6',
+                px: '5',
+                py: '4',
                 variant: 'borders.muted',
                 'alignItems': ['center'],
               }}
             >
-              Searching for {venueSearchParams.name}&nbsp;&nbsp;&nbsp;&nbsp;
+              Searching for&nbsp;
+              <strong>{venueSearchParams.name}</strong>
+              &nbsp;&nbsp;&nbsp;&nbsp;
               <Spinner size={36} />
             </Flex>
           }

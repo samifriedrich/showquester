@@ -11,59 +11,53 @@ interface ResultProps {
 }
 
 const Result = (props: ResultProps) => {
+  const resultText = {
+    m: '0',
+    mr: '5',
+  };
 
   return (
     <Flex
       sx={{
-        my: '5',
-        px: '4',
-        py: '3',
+        mt: ['5', '6'],
+        px: '5',
+        py: '4',
+        maxWidth: '90vw',
         variant: 'borders.muted',
+        flexDirection: ['column', 'column', 'row'],
       }}
     >
       <Flex
         sx={{
           alignItems: 'center',
+          mb: ['4', '4', '0']
         }}
       >
         {!props.playlistError && !props.playlistLoading && !props.playlistName && 
-          <p
-            sx={{
-              m: '0',
-              mr: '4',
-            }}
-          >
+          <p sx={resultText}>
             {props.venueName} &bull; {props.venueLocation}
           </p>
         }
         {props.playlistLoading &&
-          <p
-            sx={{
-              m: '0',
-              mr: '4',
-            }}
-          >
+          <p sx={resultText}>
             Creating playlist&nbsp;&nbsp;&nbsp;&nbsp;
           </p>
         }
         {!props.playlistError && !props.playlistLoading && props.playlistName && 
-          <p
-            sx={{
-              m: '0',
-              mr: '4',
-            }}
-          >
-            Playlist created: <strong>{props.playlistName}</strong>
+          <p sx={resultText}>
+            Playlist created:&nbsp;&nbsp;
+            <strong
+              sx={{
+                color: 'highlight',
+              }}
+            >
+              {props.playlistName}
+            </strong>
           </p>
         }
         {props.playlistError && 
-          <p
-            sx={{
-              m: '0',
-              mr: '4',
-            }}
-          >
-            Couldn't create playlist for {props.venueName}.
+          <p sx={resultText}>
+            Couldn't create playlist for <strong>{props.venueName}</strong>.
           </p>
         }
       </Flex>
@@ -72,11 +66,14 @@ const Result = (props: ResultProps) => {
         <Button
           sx={{
             variant: 'buttons.primary.outline',
+            '&:hover': {
+              variant: 'buttons.primary.outline.hover',
+            },
             minWidth: '150px',
           }}
           onClick={() => props.handleCreatePlaylist(props.venueName)}
         >
-          Create Playlist
+          {props.playlistName ? 'Recreate Playlist' : 'Create Playlist'}
         </Button>
       }
       {props.playlistLoading &&
