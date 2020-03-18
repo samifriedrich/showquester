@@ -246,9 +246,8 @@ def main():
             track_batches = list(chunks(tracks_to_add, 100))
 
             print('...UPDATING SHOWQUESTER PLAYLIST TRACKS...')
-            for i in range(0,len(track_batches)):
-                track_uris = track_batches[i]
-                if i == 0:
+            for batch_num, track_uris in enumerate(track_batches):
+                if batch_num == 0:
                     result = sp.user_playlist_replace_tracks(username, playlist_id, track_uris)
                 else:
                     results = sp.user_playlist_add_tracks(username, playlist_id, track_uris)
