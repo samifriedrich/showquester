@@ -1,3 +1,16 @@
+### Custom
+
+# spotipy token cache
+.cache-*
+
+# Visual Studio settings
+.vscode/
+
+# OS junk
+*.DS_Store
+
+### Auto
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
