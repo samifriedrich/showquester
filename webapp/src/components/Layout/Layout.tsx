@@ -1,14 +1,11 @@
+/** @jsx jsx */
+import { jsx, ThemeProvider, Flex } from 'theme-ui'
 import Head from 'next/head'
 
-/** @jsx jsx */
-// @ts-ignore
-import { jsx } from 'theme-ui'
-import { ThemeProvider, Flex } from 'theme-ui'
 import theme from '../../styles/theme'
-
 import Footer from '../Footer/Footer'
 
-const Layout = (props: any) => (
+const Layout = ({ children }: {children: any}) => (
   <ThemeProvider theme={theme}>
     <Head>
       <title>ShowQuester</title>
@@ -24,7 +21,7 @@ const Layout = (props: any) => (
       }}
     >
       <div>
-        {props.children}
+        {children}
       </div>
       <Footer />
     </Flex>
