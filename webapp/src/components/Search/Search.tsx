@@ -2,8 +2,12 @@
 import { jsx, Box, Button, Flex, Label, Input } from 'theme-ui'
 import { useState } from 'react';
 
-import { Venue } from '../../models/venue'
 import * as styles from './Search.styles'
+
+export interface Venue {
+  name: string;
+  location: string;
+}
 
 interface SearchProps {
   handleVenueSearch: (arg0: Venue) => void;
