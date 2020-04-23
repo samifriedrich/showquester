@@ -1,82 +1,81 @@
 /** @jsx jsx */
 import { jsx, Button, Flex, Spinner } from 'theme-ui'
 
+import * as styles from './VenueResult.styles'
+
 interface ResultProps {
+  authToken?: string;
+  authUrl: string;
   venueName: string;
   venueLocation: string;
   playlistName: string | null;
   playlistLoading: boolean;
   playlistError: boolean;
-  handleCreatePlaylist: (venueName: string) => Promise<void>;
+  handleCreatePlaylist: (venueName: string, venueLocation: string) => Promise<void>;
 }
 
 const Result = (props: ResultProps) => {
-  const resultText = {
-    m: '0',
-    mr: '5',
-  };
+  const {
+    authToken,
+    authUrl,
+    venueName,
+    venueLocation,
+    playlistName,
+    playlistLoading,
+    playlistError,
+    handleCreatePlaylist,
+  } = props;
 
   return (
-    <Flex
-      sx={{
-        mt: ['5', '6'],
-        px: '5',
-        py: '4',
-        maxWidth: '90vw',
-        variant: 'borders.muted',
-        flexDirection: ['column', 'column', 'row'],
-      }}
-    >
-      <Flex
-        sx={{
-          alignItems: 'center',
-          mb: ['4', '4', '0']
-        }}
-      >
-        {!props.playlistError && !props.playlistLoading && !props.playlistName && 
-          <p sx={resultText}>
-            {props.venueName} &bull; {props.venueLocation}
+    <Flex sx={styles.resultContainer}>
+      <Flex sx={styles.venueInfo}>
+
+        {!playlistError && !playlistLoading && !playlistName && 
+          <p sx={styles.resultText}>
+            {venueName} &bull; {venueLocation}
           </p>
         }
-        {props.playlistLoading &&
-          <p sx={resultText}>
+
+        {playlistLoading &&
+          <p sx={styles.resultText}>
             Creating playlist&nbsp;&nbsp;&nbsp;&nbsp;
           </p>
         }
-        {!props.playlistError && !props.playlistLoading && props.playlistName && 
-          <p sx={resultText}>
+
+        {!playlistError && !playlistLoading && playlistName && 
+          <p sx={styles.resultText}>
             Playlist created:&nbsp;&nbsp;
             <strong
-              sx={{
-                color: 'highlight',
-              }}
+              sx={styles.createdPlaylistName}
             >
-              {props.playlistName}
+              {playlistName}
             </strong>
           </p>
         }
-        {props.playlistError && 
-          <p sx={resultText}>
-            Couldn't create playlist for <strong>{props.venueName}</strong>.
+
+        {playlistError && 
+          <p sx={styles.resultText}>
+            Couldn't create playlist for <strong>{venueName}</strong>.
           </p>
         }
       </Flex>
 
-      {!props.playlistLoading &&
+      {!authToken && !playlistLoading &&
+        <a href={authUrl}>
+          <Button sx={styles.createPlaylistBtn}>Log in to Spotify to continue</Button>
+        </a>
+      }
+
+      {authToken && !playlistLoading &&
         <Button
-          sx={{
-            variant: 'buttons.primary.outline',
-            '&:hover': {
-              variant: 'buttons.primary.outline.hover',
-            },
-            minWidth: '150px',
-          }}
-          onClick={() => props.handleCreatePlaylist(props.venueName)}
+          sx={styles.createPlaylistBtn}
+          onClick={() => handleCreatePlaylist(venueName, venueLocation)}
         >
-          {props.playlistName ? 'Recreate Playlist' : 'Create Playlist'}
+          {playlistName ? 'Recreate Playlist' : 'Create Playlist'}
         </Button>
       }
-      {props.playlistLoading &&
+
+      {playlistLoading &&
         <Spinner size={36} />
       }
     </Flex>

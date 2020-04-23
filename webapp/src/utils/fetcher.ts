@@ -15,7 +15,14 @@ export function POST(uri: RequestInfo, postData?: any) {
       'Content-Type': 'application/json',
     },
     ...postData
-  }).then((response: Response) => response.json());
+  })
+  .then((response: Response) => {
+    if (!response.ok) { throw response; }
+    return response.json();
+  })
+  .catch((error: Error) => {
+    throw error;
+  });
 }
 
 export default fetcher;

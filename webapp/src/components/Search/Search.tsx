@@ -2,9 +2,18 @@
 import { jsx, Box, Button, Flex, Label, Input } from 'theme-ui'
 import { useState } from 'react';
 
-import { Venue } from '../../models/venue'
+import * as styles from './Search.styles'
 
-const Search = (props: {handleVenueSearch: (arg0: Venue) => void}) => {
+export interface Venue {
+  name: string;
+  location: string;
+}
+
+interface SearchProps {
+  handleVenueSearch: (arg0: Venue) => void;
+}
+
+const Search = ({ handleVenueSearch }: SearchProps) => {
 
   const [name, setVenueName] = useState('');
   const [location, setLocation] = useState('');
@@ -13,19 +22,9 @@ const Search = (props: {handleVenueSearch: (arg0: Venue) => void}) => {
     <Flex
       as='form'
       onSubmit={e => e.preventDefault()}
-      sx={{
-        flexDirection: ['column', 'column', 'row'],
-        width: ['90%', '80%', '100%'],
-        justifyContent: 'center',
-        alignItems: ['flex-start', 'flex-start', 'flex-end'],
-      }}
+      sx={styles.searchContainer}
     >
-      <Box
-        sx={{
-          mr: '4',
-          mb: ['3', '3', '0'],
-        }}
-      >
+      <Box sx={styles.inputBox}>
         <Label htmlFor="name">Venue Name</Label>
         <Input
           name="name"
@@ -35,12 +34,7 @@ const Search = (props: {handleVenueSearch: (arg0: Venue) => void}) => {
         />
       </Box>
 
-      <Box
-        sx={{
-          mr: '4',
-          mb: ['3', '3', '0'],
-        }}
-      >
+      <Box sx={styles.inputBox}>
         <Label htmlFor="location">Location</Label>
         <Input
           name="location"
@@ -51,15 +45,10 @@ const Search = (props: {handleVenueSearch: (arg0: Venue) => void}) => {
       </Box>
 
       <Button
-        sx={{
-          variant: !name || !location ? 'buttons.disabled' : 'buttons.primary',
-          '&:hover': {
-            variant: !name || !location ? 'buttons.disabled' : 'buttons.primary.hover',
-          }
-        }}
+        sx={!name || !location ? styles.searchBtnDisabled : styles.searchBtn}
         type="submit"
         disabled={!name || !location}
-        onClick={() => props.handleVenueSearch({name, location})}
+        onClick={() => handleVenueSearch({name, location})}
       >
         Search
       </Button>

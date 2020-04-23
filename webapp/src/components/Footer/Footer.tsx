@@ -2,36 +2,20 @@
 import { jsx, Flex, NavLink } from 'theme-ui'
 import Link from 'next/link'
 
-const Footer = () => (
-  <Flex
-    sx={{
-      width: '100%',
-      height: '4',
-      alignItems: 'center',
-      justifyContent: 'flex-end',
-      mb: '3',
-    }}
-  >
+import * as styles from './Footer.styles'
+
+const Footer: React.FC = () => (
+  <Flex sx={styles.footerContainer}>
     <Link href="/">
       <NavLink
-        sx={{
-          pr: '4',
-          '&:hover': {
-            cursor: 'pointer',
-          }
-        }}
+        sx={styles.link}
       >
         Search
       </NavLink>
       </Link>
     <Link href="/about">
       <NavLink
-        sx={{
-          pr: '6',
-          '&:hover': {
-            cursor: 'pointer',
-          }
-        }}
+        sx={styles.rightLink}
       >
         About
       </NavLink>
