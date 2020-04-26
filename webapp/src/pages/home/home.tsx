@@ -10,8 +10,8 @@ import Search from '../../components/Search/Search'
 import VenueResult from '../../components/VenueResult/VenueResult'
 import * as styles from './home.styles'
 
-const VENUE_SEARCH_URL: string = process.env.VENUE_SEARCH_URL as string;
-const CREATE_PLAYLIST_URL: string = process.env.CREATE_PLAYLIST_URL as string;
+const VENUE_SEARCH_URL: string = '/api/searchVenue';
+const CREATE_PLAYLIST_URL: string = '/api/createPlaylist';
 
 const SPOTIFY_AUTH_URL: string = 'https://accounts.spotify.com/authorize';
 const REDIRECT_URL: string = process.env.REDIRECT_URL as string;
@@ -40,7 +40,12 @@ const Home: React.FC = () => {
     venueSearchParams
     ? `${VENUE_SEARCH_URL}?name=${venueSearchParams.name}&location=${venueSearchParams.location}`
     : null,
-    fetcher
+    fetcher,
+    {
+      errorRetryCount: 0,
+      shouldRetryOnError: false,
+      revalidateOnFocus: false,
+    }
   );
 
   useEffect(() => {
@@ -52,7 +57,7 @@ const Home: React.FC = () => {
         setVenueSearchParams({
           name,
           location,
-        })
+        });
       } else if (venueSearchParams) {
         sessionStorage.setItem('venueName', venueSearchParams.name);
         sessionStorage.setItem('venueLocation', venueSearchParams.location);
@@ -84,12 +89,17 @@ const Home: React.FC = () => {
     setVenueSearchParams(venue);
   }
 
-  const handleCreatePlaylist = async (venueName: string, venueLocation: string): Promise<void> => {
+  const handleCreatePlaylist = async (): Promise<void> => {
     setPlaylistLoading(true);
     setPlaylistError(false);
 
     try {
-      const playlistData = await POST(CREATE_PLAYLIST_URL, {body: {venueName, venueLocation, token: authToken}});
+      const playlistData = await POST(CREATE_PLAYLIST_URL, {
+        body: {
+          venueId: venueData.data.venue_id,
+          token: authToken
+        }}
+      );
       if (!playlistData || playlistData.status >= 300 || playlistData.error) { throw playlistData.error || Error; }
       setPlaylistName(playlistData.playlist_name);
     } catch (error) {
@@ -129,18 +139,18 @@ const Home: React.FC = () => {
             </Flex>
           }
 
-          {authError && !venueError && venueData &&
+          {authError && !venueError && venueData?.data &&
             <Flex sx={styles.errorContainer}>
               Sorry, we couldn't log in to Spotify.&nbsp;<a href="/">Start fresh.</a>
             </Flex>
           }
 
-          {!authError && !venueError && venueData &&
+          {!authError && !venueError && venueData?.data &&
             <VenueResult
               authToken={authToken}
               authUrl={authUrl}
-              venueName={venueData.name}
-              venueLocation={venueData.location}
+              venueName={venueData.data.venue_name}
+              venueLocation={venueData.data.venue_city}
               playlistName={playlistName}
               playlistLoading={playlistLoading}
               playlistError={playlistError}

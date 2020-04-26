@@ -1,5 +1,5 @@
 from app import app
-from flask import Flask, render_template, redirect, request, session, make_response, session, redirect
+from flask import Flask, render_template, redirect, request, session, make_response, session, redirect, abort
 import pandas as pd
 import spotipy
 import spotipy.util as util
@@ -17,7 +17,7 @@ app.secret_key = os.urandom(12).hex()
 sk_api_key = os.environ.get('SONGKICK_API_KEY')
 # set Spotify API authorization vars and scope
 CLIENT_ID = os.environ.get('SPOTIFY_CLIENT_ID')
-CLIENT_SECRET = os.environ.get('SPOTIFY_CLIENT_SECRET')
+CLIENT_SECRET = os.environ.get('bca4829420b24acd95bbbbdc5c7f3ab1')
 SCOPE = 'playlist-modify-public'
 # REDIRECT_URL must be listed on ShowQuester dashboard on Spotify for Developers
 REDIRECT_URI = "http://127.0.0.1:5000/callback"
@@ -71,25 +71,51 @@ def callback():
     session["access_token"] = response_body.get("access_token")
     return redirect('go')
 
+@app.route("/venue", methods=['GET'])
+def venue():
+    # abort(404)
+    venue_name = request.args.get('name')
+    venue_city = request.args.get('location')
+    venue_id = get_venue_id(venue_name, venue_city)
+    if venue_id:
+        return {
+            'success': True,
+            'data': {
+                'venue_id': venue_id,
+                'venue_name': venue_name,
+                'venue_city': venue_city,
+            }
+        }
+    else:
+        # abort(404)
+        return {
+            'success': False,
+            'error': {
+                'type': 404,
+                'message': 'No venue found.'
+            }
+        }
+
+
 # authorization-code-flow Step 3.
 # Use the access token to access the Spotify Web API;
 # Spotify returns requested data
-@app.route("/go")
-def go():
-
-    data = request.form
-    sp = spotipy.Spotify(auth=session["access_token"])
+@app.route("/create", methods=['POST'])
+def create():
+    venue_id = request.json.get('venue_id')
+    access_token = request.json.get('access_token')
+ 
+    sp = spotipy.Spotify(auth=access_token)
 
     # get username from current user after auth
-    # NOTE: currently, USERNAME is set by env var, so username is ignored
     username = sp.me()['id']
     print(f'\nSpotify User: {username}')
     global USERNAME
     USERNAME = username
 
-    print("\n>>> ShowQuester started. Processing venues in venues.csv\n")
+    print("\n>>> ShowQuester started.")
     print(f"*****************{venue_name}*******************")
-    venue_id = get_venue_id(venue_name, venue_city)
+    #venue_id = get_venue_id(venue_name, venue_city)
 
     if venue_id:
         event_list = get_venue_events(venue_id)
@@ -180,6 +206,7 @@ def get_venue_id(venue_name, venue_city):
     To handle duplicate venue names, this function will check that venue's city matches that entered in venues.csv"""
     req = f'https://api.songkick.com/api/3.0/search/venues.json?query={venue_name}&apikey={sk_api_key}'
     response = requests.get(req)
+    print(response.json())
     num_results = response.json()['resultsPage']['totalEntries']
 
     if num_results > 0:
@@ -192,7 +219,6 @@ def get_venue_id(venue_name, venue_city):
                 sk_venue_name = hit['displayName']
                 print(f'Found {sk_venue_name} in {result_city}, {result_state} on Songkick')
                 return venue_id
-                break
             else:
                 continue
     else:
@@ -296,7 +322,6 @@ def get_top_track(artist_uri):
             if album_artist == artist_uri:
                 top_track = track['uri']
                 return top_track
-                break
             else:
                 continue
         if not top_track:
