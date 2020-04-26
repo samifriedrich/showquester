@@ -35,7 +35,7 @@ const Search = ({ handleVenueSearch }: SearchProps) => {
       </Box>
 
       <Box sx={styles.inputBox}>
-        <Label htmlFor="location">Location</Label>
+        <Label htmlFor="location">City</Label>
         <Input
           name="location"
           type="text"
