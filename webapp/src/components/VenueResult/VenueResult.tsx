@@ -11,7 +11,7 @@ interface ResultProps {
   playlistName: string | null;
   playlistLoading: boolean;
   playlistError: boolean;
-  handleCreatePlaylist: (venueName: string, venueLocation: string) => Promise<void>;
+  handleCreatePlaylist: () => Promise<void>;
 }
 
 const Result = (props: ResultProps) => {
@@ -69,9 +69,14 @@ const Result = (props: ResultProps) => {
       {authToken && !playlistLoading &&
         <Button
           sx={styles.createPlaylistBtn}
-          onClick={() => handleCreatePlaylist(venueName, venueLocation)}
+          onClick={() => handleCreatePlaylist()}
         >
-          {playlistName ? 'Recreate Playlist' : 'Create Playlist'}
+          {playlistName 
+            ? 'Recreate Playlist' 
+            : playlistError 
+              ? 'Try Again' 
+              : 'Create Playlist'
+          }
         </Button>
       }
 
