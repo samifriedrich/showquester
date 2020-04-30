@@ -104,7 +104,7 @@ def venue():
 def create():
     venue_id = request.json.get('venue_id')
     access_token = request.json.get('access_token')
- 
+    global sp
     sp = spotipy.Spotify(auth=access_token)
 
     # get username from current user after auth
@@ -162,10 +162,8 @@ def create():
         print('...UPDATING SHOWQUESTER PLAYLIST TRACKS...')
         for batch_num, track_uris in enumerate(track_batches):
             if batch_num == 0:
-                sp = spotipy.Spotify(auth=session["access_token"])
                 result = sp.user_playlist_replace_tracks(USERNAME, playlist_id, track_uris)
             else:
-                sp = spotipy.Spotify(auth=session["access_token"])
                 results = sp.user_playlist_add_tracks(USERNAME, playlist_id, track_uris)
 
         print('...UPDATING SHOWQUESTER PLAYLIST DESCRIPTION...')
@@ -267,7 +265,6 @@ def events_df(event_list):
 def get_my_public_playlists(username):
     """Returns a dictionary of public playlist names (keys) and their uri's (values) for the given username."""
     my_playlists = {}
-    sp = spotipy.Spotify(auth=session["access_token"])
     results = sp.user_playlists(username)
 
     while results:
@@ -283,7 +280,6 @@ def get_my_public_playlists(username):
 def create_sq_playlist(venue_name, venue_city, venue_state):
     """Create an empty Showquester playlist on Spotify for a given venue"""
     playlist_name = f"ShowQuester: {venue_name} ({venue_city}, {venue_state})"
-    sp = spotipy.Spotify(auth=session["access_token"])
     results = sp.user_playlist_create(USERNAME, playlist_name, public=True)
     playlist_uri = results['uri']
     print(f'Created playlist "{playlist_name}"')
@@ -292,7 +288,6 @@ def create_sq_playlist(venue_name, venue_city, venue_state):
 def get_artist(search_str):
     """Search for an artist on Spotify and return artist object if found.
     Uses fuzzywuzzy's process.extractOne convenience function to parse search results for best match."""
-    sp = spotipy.Spotify(auth=session["access_token"])
     results = sp.search(search_str,type='artist')
 
     if results['artists']['total'] > 0:
@@ -311,7 +306,6 @@ def get_artist(search_str):
 
 def get_top_track(artist_uri):
     """Return top track uri for a given artist on Spotify."""
-    sp = spotipy.Spotify(auth=session["access_token"])
     results = sp.artist_top_tracks(artist_uri)
     top_tracks = results['tracks']
     top_track = []
@@ -348,7 +342,6 @@ def update_playlist_details(playlist_id, playlist_name, playlist_descr):
     """Updates playlist details.
     NOTE: There are several reports of issues when updating playlist descriptions in the Spotify community.
     Currently, it seems the only solution is to wait for the server to update, which could take a day."""
-    sp = spotipy.Spotify(auth=session["access_token"])
     results = sp.user_playlist_change_details(
             USERNAME, playlist_id=playlist_id, name=playlist_name, description=playlist_descr)
     #print(f'Updated playlist "{playlist_name}"')
