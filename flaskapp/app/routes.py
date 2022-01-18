@@ -1,5 +1,5 @@
 from app import app
-from flask import Flask, render_template, redirect, request, session, make_response, session, redirect, abort
+from flask import Flask, render_template, redirect, request, make_response, session, redirect, abort
 import pandas as pd
 import spotipy
 import spotipy.util as util
@@ -7,6 +7,7 @@ import os
 import requests
 import datetime
 import time
+import urllib.parse
 from fuzzywuzzy import fuzz, process
 from math import ceil as round_up
 
@@ -36,27 +37,33 @@ venue_state = "TX"
 ## Routes
 
 # Authorization-code-flow Step 1.
-# ShowQuester requests permission from quit()user.
+# ShowQuester requests permission from user.
 # User is taken to Spotify login page via auth_url
 # User logs into Spotify to authorize access
 @app.route("/auth")
 def verify():
+    #session.clear()
+    session["playlist_id"] = request.args.get("playlist_id")
     auth_url = f'{API_BASE}/authorize?client_id={CLIENT_ID}&response_type=code&redirect_uri={REDIRECT_URI}&scope={SCOPE}&show_dialog={SHOW_DIALOG}'
     #print(auth_url)
     return redirect(auth_url)
 
+# "Landing page" endpoint for flask app
 @app.route('/index')
 @app.route('/')
 def index():
-    return "Welcome to ShowQuester. Go to http://127.0.0.1:5000/auth endpoint to begin."
+    #return '<iframe src="https://open.spotify.com/embed/track/7BoVAJ0HuKcBBRmUGlzX6o" width="300" height="80" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>'
+    return "Welcome to ShowQuester. Go to http://127.0.0.1:5000/auth?playlist_id=123456 endpoint to begin."
 
 # authorization-code-flow Step 2.
 # Showquester requests refresh and access tokens;
 # Spotify returns access and refresh tokens
 @app.route('/callback')
 def callback():
-    session.clear()
+    return session["playlist_id"]
     code = request.args.get('code')
+    playlistID = request.args.get("playlist_id")
+    print(playlistID)
     auth_token_url = f"{API_BASE}/api/token"
     response = requests.post(auth_token_url, data={
                 "grant_type":"authorization_code",
@@ -71,9 +78,12 @@ def callback():
     session["access_token"] = response_body.get("access_token")
     return redirect('go')
 
+@app.route('/go')
+def go():
+    return "Spotify user granted ShowQuester access"
+
 @app.route("/venue", methods=['GET'])
 def venue():
-    # abort(404)
     venue_name = request.args.get('name')
     venue_city = request.args.get('location')
     venue_id = get_venue_id(venue_name, venue_city)
@@ -97,7 +107,7 @@ def venue():
         }
 
 
-# authorization-code-flow Step 3.
+# Authorization-code-flow Step 3.
 # Use the access token to access the Spotify Web API;
 # Spotify returns requested data
 @app.route("/create", methods=['POST'])
@@ -158,6 +168,8 @@ def create():
         tracks_to_add = list(filter(None, tracks_to_add))
         # batch tracks into 100's to respect Spotify Web API limits
         track_batches = list(chunks(tracks_to_add, 100))
+        
+        # split into playlist creation and writing to account
 
         print('...UPDATING SHOWQUESTER PLAYLIST TRACKS...')
         for batch_num, track_uris in enumerate(track_batches):
@@ -334,8 +346,7 @@ def chunks(lst, n):
 def build_playlist_description(venue_name, venue_url, venue_city, venue_state):
     """Create description for ShowQuester playlist."""
     todays_date = datetime.date.today()
-    github_url = "https://github.com/samifriedrich/showquester"
-    descr = f"A programmatically-generated playlist featuring artists coming soon to {venue_name} in {venue_city}, {venue_state}. Updated {todays_date}. Ordered by date, with this week up top and events farther in the future at the bottom. Go to https://www.songkick.com/ for tickets and {venue_url} for more info. Check out my GitHub for details on how this playlist is generated: https://github.com/samifriedrich/showquester/"
+    descr = f"A programmatically-generated playlist featuring artists coming soon to {venue_name} in {venue_city}, {venue_state}. Updated {todays_date}. Ordered by date, with this week up top and events farther in the future at the bottom. Go to {venue_url} for more info."
     return descr
 
 def update_playlist_details(playlist_id, playlist_name, playlist_descr):
