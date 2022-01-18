@@ -35,6 +35,9 @@ venue_state = "TX"
 
 
 ## Routes
+@app.route('/playlist/create')
+def index():
+    return "Welcome to ShowQuester. Go to http://127.0.0.1:5000/auth?playlist_id=123456 endpoint to begin."
 
 # Authorization-code-flow Step 1.
 # ShowQuester requests permission from user.
@@ -42,10 +45,8 @@ venue_state = "TX"
 # User logs into Spotify to authorize access
 @app.route("/auth")
 def verify():
-    #session.clear()
     session["playlist_id"] = request.args.get("playlist_id")
     auth_url = f'{API_BASE}/authorize?client_id={CLIENT_ID}&response_type=code&redirect_uri={REDIRECT_URI}&scope={SCOPE}&show_dialog={SHOW_DIALOG}'
-    #print(auth_url)
     return redirect(auth_url)
 
 # "Landing page" endpoint for flask app
@@ -60,10 +61,8 @@ def index():
 # Spotify returns access and refresh tokens
 @app.route('/callback')
 def callback():
-    return session["playlist_id"]
+    #return session["playlist_id"]
     code = request.args.get('code')
-    playlistID = request.args.get("playlist_id")
-    print(playlistID)
     auth_token_url = f"{API_BASE}/api/token"
     response = requests.post(auth_token_url, data={
                 "grant_type":"authorization_code",
@@ -110,7 +109,7 @@ def venue():
 # Authorization-code-flow Step 3.
 # Use the access token to access the Spotify Web API;
 # Spotify returns requested data
-@app.route("/create", methods=['POST'])
+@app.route("/playlist/save", methods=['POST'])
 def create():
     venue_id = request.json.get('venue_id')
     access_token = request.json.get('access_token')
