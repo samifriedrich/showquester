@@ -1,5 +1,5 @@
 /** @jsx jsx */
-import { jsx, Box, Flex, Spinner } from 'theme-ui'
+import { jsx, Box, Flex, Spinner, Button } from 'theme-ui'
 import { useState, useEffect, Dispatch, SetStateAction } from 'react'
 import useSWR from 'swr'
 
@@ -8,8 +8,10 @@ import fetcher, { POST } from '../../utils/fetcher'
 import Layout from '../../components/Layout/Layout'
 import Search from '../../components/Search/Search'
 import VenueResult from '../../components/VenueResult/VenueResult'
+import useFetch, { HTTPVerbs } from '../../utils/useFetch';
 import * as styles from './home.styles'
 
+const AUTH_URL: string = '/api/auth';
 const VENUE_SEARCH_URL: string = '/api/searchVenue';
 const CREATE_PLAYLIST_URL: string = '/api/createPlaylist';
 
@@ -24,6 +26,8 @@ const SCOPES: string[] = [
   'playlist-modify-private'
 ];
 
+// const AUTH_URL = 'http://127.0.0.1:5000/auth';
+
 const Home: React.FC = () => {
 
   const state: number = Math.floor(Math.random() * Math.floor(999999));
@@ -35,6 +39,16 @@ const Home: React.FC = () => {
   const [playlistError, setPlaylistError]: [boolean, Dispatch<SetStateAction<boolean>>] = useState(false as boolean);
   const [authToken, setAuthToken]: [string, Dispatch<SetStateAction<string>>] = useState('');
   const [authError, setAuthError]: [boolean, Dispatch<SetStateAction<boolean>>] = useState(false as boolean);
+
+  const {
+    request,
+    // loading,
+    // success,
+  } = useFetch();
+
+  const authAccountAndBuildPlaylist = async (playlistId: string): Promise<void> => {
+    await request(`${AUTH_URL}?playlist_id=${playlistId}`, HTTPVerbs.POST);
+  };
 
   const { data: venueData, error: venueError }: any = useSWR(
     venueSearchParams
@@ -122,7 +136,12 @@ const Home: React.FC = () => {
             </h1>
           </Box>
 
-          <Search handleVenueSearch={handleVenueSearch} />
+          <Search
+            handleVenueSearch={
+              handleVenueSearch
+            }
+          />
+          <Button onClick={() => authAccountAndBuildPlaylist('12345')}>Auth</Button>
 
           {venueError && 
             <Flex sx={styles.errorContainer}>
