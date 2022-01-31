@@ -2,6 +2,7 @@
 
 # spotipy token cache
 .cache-*
+.cache*
 
 # Visual Studio settings
 .vscode/
