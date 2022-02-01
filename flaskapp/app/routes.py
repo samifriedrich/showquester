@@ -53,8 +53,8 @@ def venue():
     #venue_city = "Portland"   # uncomment for testing 
     venue_info = get_venue_id(venue_name, venue_city)
     if venue_info:
-        session['venue_info'] = venue_info
-        print(session['venue_info']['venue_name'])
+        # session['venue_info'] = venue_info
+        # print(session['venue_info']['venue_name'])
         return {
             'success': True,
             'data': {
@@ -74,14 +74,19 @@ def venue():
         }
 
 # Create tracklist for venue       
-@app.route("/playlist/create")
+@app.route("/playlist/create", methods=['GET'])
 def create():
-    venue_id = session['venue_info']['venue_id']
-    #venue_id = '5776'  # Mississippi Studios
+    venue_id = request.args.get('venue_id')
+    print(venue_id)
+    # print('********')
+    # print(session)
+    # venue_id = session['venue_info']['venue_id']
+    # venue_id = '5776'  # Mississippi Studios
     # Client Credentials flow via spotipy (no user login required)
     client_credentials_manager = SpotifyClientCredentials()
     sp_cc = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
     if venue_id:
+        print('*** creating playlist ***')
         event_list = get_venue_events(venue_id)
         shows = events_df(event_list)
         artist_list = list(shows.artist)
@@ -97,16 +102,36 @@ def create():
                 pl_tracks.append(track)
         pl_tracks = list(filter(None, pl_tracks))  # filter out empty strings where no track was found
         display_tracks = pl_tracks[0:100] # trim to 100
-        session["display_tracks"] = display_tracks
-        session["playlist_tracks"] = pl_tracks
-    return 'Track list generated.'
-        
+        # session["display_tracks"] = display_tracks
+        # session["playlist_tracks"] = pl_tracks
+        return {
+            'success': True,
+            'data': {
+                'display_tracks': display_tracks,
+                'playlist_tracks': pl_tracks,
+            }
+        }
+    return {
+        'success': False,
+    }
+
 # Authorization-code-flow Step 1.
 # ShowQuester requests permission from user.
 # User is taken to Spotify login page via auth_url
 # User logs into Spotify to authorize access
-@app.route("/auth")
-def verify():
+@app.route('/playlist/save', methods=['POST'])
+def save_playlist():
+    # get data from POST request
+    venue_id = request.get_json('venue_id')
+    playlist_tracks = request.get_json('playlist_tracks')
+
+    # save data to session
+    session['venue_id'] = venue_id
+    session['venue_name'] = 'Mississippi Studios'
+    session['venue_city'] = 'Portland'
+    session['playlist_tracks'] = playlist_tracks
+
+    # auth with spotify
     auth_url = f'{API_BASE}/authorize?client_id={CLIENT_ID}&response_type=code&redirect_uri={REDIRECT_URI}&scope={SCOPE}&show_dialog={SHOW_DIALOG}'
     return redirect(auth_url)
 
@@ -127,19 +152,24 @@ def callback():
                 })
     response_body = response.json()
     session['token_info'] = response_body
-    session["access_token"] = response_body.get("access_token")
+    session['access_token'] = response_body.get("access_token")
     print(session)
-    return 'Logged in. Go to /playlist/save endpoint to test save.'
+    sp = spotipy.Spotify(auth=session['access_token'])
+    results = create_sq_playlist(sp)
+    print(results)
+    playlist_uri = results['playlist_uri']
+    # showquester.com/success?playlist_uri=playlist_uri
+    return f'Playlist created: {playlist_uri}'
 
 # Authorization-code-flow Step 3.
 # Use the access token to access the Spotify Web API;
 # Spotify returns requested data
-@app.route('/playlist/save')
-def save_playlist():
-    sp = spotipy.Spotify(auth=session['access_token'])
-    results = create_sq_playlist(sp) 
-    print(results)
-    return "Playlist saved to user's account."
+# @app.route('/playlist/save')
+# def save_playlist():
+#     sp = spotipy.Spotify(auth=session['access_token'])
+#     results = create_sq_playlist(sp) 
+#     print(results)
+#     return "Playlist saved to user's account."
         
 ## Functions
 # Checks to see if token is valid and gets a new token if not
@@ -229,6 +259,9 @@ def events_df(event_list):
                 ids.append(artist['id'])
             event_date = event['start']['date']
             dates.extend([event_date] * num_performers)
+    dates = dates[0:5]
+    artists = artists[0:5]
+    ids = ids[0:5]
 
     return pd.DataFrame(data={'artist':artists, 'date':dates, 'artist_id':ids})
 
@@ -296,8 +329,8 @@ def chunks(lst, n):
 def create_sq_playlist(sp):
     """Create an empty Showquester playlist on Spotify for a given venue"""
     username = sp.me()['id']
-    venue_name = session['venue_info']['venue_name']
-    venue_city = session['venue_info']['venue_city']
+    venue_name = session['venue_name']
+    venue_city = session['venue_city']
     playlist_name = f"ShowQuester: {venue_name} ({venue_city})"
     results = sp.user_playlist_create(username, playlist_name, public=True)
     playlist_uri = results['uri']
