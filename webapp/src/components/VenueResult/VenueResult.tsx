@@ -4,20 +4,18 @@ import { jsx, Button, Flex, Spinner } from 'theme-ui'
 import * as styles from './VenueResult.styles'
 
 interface ResultProps {
-  authToken?: string;
-  authUrl: string;
+  venueId: string;
   venueName: string;
   venueLocation: string;
   playlistName: string | null;
   playlistLoading: boolean;
   playlistError: boolean;
-  handleCreatePlaylist: () => Promise<void>;
+  handleCreatePlaylist: (venueId: string) => Promise<void>;
 }
 
 const Result = (props: ResultProps) => {
   const {
-    authToken,
-    authUrl,
+    venueId,
     venueName,
     venueLocation,
     playlistName,
@@ -60,16 +58,10 @@ const Result = (props: ResultProps) => {
         }
       </Flex>
 
-      {!authToken && !playlistLoading &&
-        <a href={authUrl}>
-          <Button sx={styles.createPlaylistBtn}>Log in to Spotify to continue</Button>
-        </a>
-      }
-
-      {authToken && !playlistLoading &&
+      {!playlistLoading &&
         <Button
           sx={styles.createPlaylistBtn}
-          onClick={() => handleCreatePlaylist()}
+          onClick={() => handleCreatePlaylist(venueId)}
         >
           {playlistName 
             ? 'Recreate Playlist' 

@@ -4,37 +4,22 @@ import { useState, useEffect, Dispatch, SetStateAction } from 'react'
 import useSWR from 'swr'
 
 import { Venue } from '../../components/Search/Search'
-import fetcher, { POST } from '../../utils/fetcher'
+import fetcher from '../../utils/fetcher'
 import Layout from '../../components/Layout/Layout'
 import Search from '../../components/Search/Search'
 import VenueResult from '../../components/VenueResult/VenueResult'
+import useFetch, { HTTPVerbs } from '../../utils/useFetch';
 import * as styles from './home.styles'
 
 const VENUE_SEARCH_URL: string = '/api/searchVenue';
 const CREATE_PLAYLIST_URL: string = '/api/createPlaylist';
-
-const SPOTIFY_AUTH_URL: string = 'https://accounts.spotify.com/authorize';
-const REDIRECT_URL: string = process.env.REDIRECT_URL as string;
-const SPOTIFY_CLIENT_ID: string = process.env.SPOTIFY_CLIENT_ID as string;
-const SCOPES: string[] = [
-  'user-read-email',
-  'playlist-read-collaborative',
-  'playlist-modify-public',
-  'playlist-read-private',
-  'playlist-modify-private'
-];
+const SAVE_PLAYLIST_URL: string = '/api/savePlaylist';
 
 const Home: React.FC = () => {
-
-  const state: number = Math.floor(Math.random() * Math.floor(999999));
-  const authUrl: string = `${SPOTIFY_AUTH_URL}?client_id=${SPOTIFY_CLIENT_ID}&response_type=code&redirect_uri=${REDIRECT_URL}&state=${state}&scope=${SCOPES.join(' ')}`;
-
   const [venueSearchParams, setVenueSearchParams]: any = useState(null);
   const [playlistName, setPlaylistName]: [string, Dispatch<SetStateAction<string>>] = useState('');
   const [playlistLoading, setPlaylistLoading]: [boolean, Dispatch<SetStateAction<boolean>>] = useState(false as boolean);
   const [playlistError, setPlaylistError]: [boolean, Dispatch<SetStateAction<boolean>>] = useState(false as boolean);
-  const [authToken, setAuthToken]: [string, Dispatch<SetStateAction<string>>] = useState('');
-  const [authError, setAuthError]: [boolean, Dispatch<SetStateAction<boolean>>] = useState(false as boolean);
 
   const { data: venueData, error: venueError }: any = useSWR(
     venueSearchParams
@@ -65,52 +50,33 @@ const Home: React.FC = () => {
     }
   }, [venueSearchParams])
 
-  useEffect(() => {
-    if (process.browser) {
-      let token = localStorage.getItem('spToken');
-
-      if (!token) {
-        const params = new URLSearchParams(window.location.search);
-        if (params.get('error')) { setAuthError(true); return; }
-        token = params.get('code');
-
-        if (token) {
-          setAuthToken(params.get('code') as string);
-          localStorage.setItem('spToken', token);
-        }
-      } else {
-        setAuthToken(token);
-      }
-    }
-  }, [authToken])
-
   const handleVenueSearch = async (venue: Venue): Promise<void> => {
     setPlaylistName('');
     setVenueSearchParams(venue);
   }
 
-  const handleCreatePlaylist = async (): Promise<void> => {
+  const {
+    request: createPlaylist,
+    // loading,
+    // success,
+  } = useFetch();
+
+  const {
+    request: savePlaylist,
+    // loading,
+    // success,
+  } = useFetch();
+
+  const handleCreatePlaylist = async (venueId: string): Promise<void> => {
     setPlaylistLoading(true);
     setPlaylistError(false);
-
-    try {
-      const playlistData = await POST(CREATE_PLAYLIST_URL, {
-        body: {
-          venueId: venueData.data.venue_id,
-          token: authToken
-        }}
-      );
-      if (!playlistData || playlistData.status >= 300 || playlistData.error) { throw playlistData.error || Error; }
-      setPlaylistName(playlistData.playlist_name);
-    } catch (error) {
-      setPlaylistError(true);
-    } finally {
-      setPlaylistLoading(false);
-      if (process.browser) {
-        sessionStorage.clear();
-      }
-    }
-  }
+    const trackData = await createPlaylist(CREATE_PLAYLIST_URL, HTTPVerbs.POST, { venueId });
+    // @ts-ignore
+    console.log(trackData.data.playlist_tracks);
+    // @ts-ignore
+    const tracks = trackData.data.playlist_tracks;
+    await savePlaylist(SAVE_PLAYLIST_URL, HTTPVerbs.POST, { venueId, tracks });
+  };
 
   return (
     <Layout>
@@ -122,7 +88,11 @@ const Home: React.FC = () => {
             </h1>
           </Box>
 
-          <Search handleVenueSearch={handleVenueSearch} />
+          <Search
+            handleVenueSearch={
+              handleVenueSearch
+            }
+          />
 
           {venueError && 
             <Flex sx={styles.errorContainer}>
@@ -139,16 +109,9 @@ const Home: React.FC = () => {
             </Flex>
           }
 
-          {authError && !venueError && venueData?.data &&
-            <Flex sx={styles.errorContainer}>
-              Sorry, we couldn't log in to Spotify.&nbsp;<a href="/">Start fresh.</a>
-            </Flex>
-          }
-
-          {!authError && !venueError && venueData?.data &&
+          {!venueError && venueData?.data &&
             <VenueResult
-              authToken={authToken}
-              authUrl={authUrl}
+              venueId={venueData.data.venue_id}
               venueName={venueData.data.venue_name}
               venueLocation={venueData.data.venue_city}
               playlistName={playlistName}
