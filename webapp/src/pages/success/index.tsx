@@ -1,6 +1,7 @@
 /** @jsx jsx */
 import { jsx, Button } from 'theme-ui'
 import Link from 'next/link'
+import { useRouter } from 'next/router'
 
 import * as styles from './Success.styles'
 import Layout from '../../components/Layout/Layout'
@@ -8,6 +9,9 @@ import HeaderLogo from '../../components/HeaderLogo/HeaderLogo';
 import InfoPage from '../../components/InfoPage/InfoPage';
 
 const Success = () => {
+  const router = useRouter()
+  const { playlist_id: playlistId } = router.query
+
   return (
     <Layout>
       <InfoPage>
@@ -17,9 +21,8 @@ const Success = () => {
           Success! Your playlist has been saved to your account.
         </p>
 
-        {/* Replace with actual link to Playlist */}
-        <Link href="/">
-          <a>
+        <Link href={`https://open.spotify.com/playlist/${playlistId}`}>
+          <a target="_blank">
             <Button
               sx={styles.searchBtn}
             >
@@ -34,8 +37,7 @@ const Success = () => {
 
         <iframe
           sx={styles.playlist}
-          // update to playlist ID when available
-          src="https://open.spotify.com/embed/album/1DFixLWuPkv3KT3TnV35m3"
+          src={`https://open.spotify.com/embed/playlist/${playlistId}`}
           width="300"
           height="380"
           frameBorder="0"
