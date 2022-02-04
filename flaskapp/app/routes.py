@@ -1,5 +1,5 @@
 from app import app
-from flask import Flask, render_template, redirect, request, make_response, session, redirect, abort
+from flask import redirect, request, make_response, session, redirect, abort
 import pandas as pd
 import spotipy
 import spotipy.util as util
@@ -8,12 +8,11 @@ import os
 import requests
 import datetime
 import time
+import base64
 from fuzzywuzzy import fuzz, process
 from math import ceil as round_up
 
 ## Globals
-app.secret_key = os.urandom(12).hex()
-#session['uid'] = uuid.uuid4()
 ## Set API authorization keys
 # Songkick API
 sk_api_key = os.environ.get('SONGKICK_API_KEY')
@@ -122,17 +121,10 @@ def create():
 @app.route('/playlist/save', methods=['POST'])
 def save_playlist():
     # get data from POST request
-    venue_id = request.get_json('venue_id')
-    playlist_tracks = request.get_json('playlist_tracks')
-
-    # save data to session
-    session['venue_id'] = venue_id
-    session['venue_name'] = 'Mississippi Studios'
-    session['venue_city'] = 'Portland'
-    session['playlist_tracks'] = playlist_tracks
-
+    data = request.get_json()
+    venue_id = data['venue_id']
     # auth with spotify
-    auth_url = f'{API_BASE}/authorize?client_id={CLIENT_ID}&response_type=code&redirect_uri={REDIRECT_URI}&scope={SCOPE}&show_dialog={SHOW_DIALOG}'
+    auth_url = f'{API_BASE}/authorize?client_id={CLIENT_ID}&response_type=code&redirect_uri={REDIRECT_URI}&scope={SCOPE}&show_dialog={SHOW_DIALOG}&state={venue_id}'
     return redirect(auth_url)
 
 # authorization-code-flow Step 2.
@@ -140,8 +132,9 @@ def save_playlist():
 # Spotify returns access and refresh tokens
 @app.route('/callback')
 def callback():
-    #return session["playlist_id"]
+    print(request)
     code = request.args.get('code')
+    venue_id = request.args.get('state')
     auth_token_url = f"{API_BASE}/api/token"
     response = requests.post(auth_token_url, data={
                 "grant_type":"authorization_code",
@@ -151,15 +144,13 @@ def callback():
                 "client_secret":CLIENT_SECRET
                 })
     response_body = response.json()
-    session['token_info'] = response_body
-    session['access_token'] = response_body.get("access_token")
-    print(session)
-    sp = spotipy.Spotify(auth=session['access_token'])
+    print(response_body)
+    access_token = response_body.get("access_token")
+    sp = spotipy.Spotify(auth=access_token)
     results = create_sq_playlist(sp)
-    print(results)
     playlist_uri = results['playlist_uri']
     # showquester.com/success?playlist_uri=playlist_uri
-    return f'Playlist created: {playlist_uri}'
+    return f'Playlist created.'
 
 # Authorization-code-flow Step 3.
 # Use the access token to access the Spotify Web API;
