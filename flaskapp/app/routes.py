@@ -16,7 +16,6 @@ CLIENT_ID = os.environ.get('SPOTIFY_CLIENT_ID')
 CLIENT_SECRET = os.environ.get('SPOTIFY_CLIENT_SECRET')
 CLIENT_USERNAME = os.environ.get('SPOTIFY_USERNAME')
 SCOPE = 'playlist-modify-public'
-# REDIRECT_URL must be listed on ShowQuester dashboard on Spotify for Developers
 REDIRECT_URI = "http://127.0.0.1:5000/callback"
 API_BASE = 'https://accounts.spotify.com'
 SHOW_DIALOG = True
@@ -43,7 +42,6 @@ def venue():
             }
         }
     else:
-        # abort(404)
         return {
             'success': False,
             'error': {
@@ -205,7 +203,6 @@ def get_top_track(sp, artist_uri):
     top_track = []
     if top_tracks:
         for track in top_tracks:
-            # find first top track on an album primarily credited to artist
             album_artist = track['album']['artists'][0]['uri']
             if album_artist == artist_uri:
                 top_track = track['uri']
@@ -309,7 +306,6 @@ def name_playlist(venue_id):
     venue_info = get_venue_info(venue_id=venue_id)
     venue_name = venue_info.get('name')
     venue_city = venue_info.get('city')
-    # Create playlist on account
     playlist_name = f"ShowQuester: {venue_name} in {venue_city}"  # Note: duplicate names do not seem to be an issue for Spotify
     return playlist_name
 
@@ -321,7 +317,6 @@ def save_playlist_to_account(sp, venue_id):
     results = sp.user_playlist_create(username, playlist_name, public=True)
     playlist_uri = results['uri']
     playlist_id = playlist_uri.split(':')[2]
-    # Add tracks and description to playlist
     results = add_tracks(sp, playlist_id, playlist_tracks)
     playlist_description = build_playlist_description(venue_id)
     results = update_playlist_details(sp, playlist_id, playlist_name, playlist_description)

@@ -1,31 +1,41 @@
 /** @jsx jsx */
 import { jsx, Box, Flex, Spinner } from 'theme-ui'
-import { useState, useEffect, Dispatch, SetStateAction } from 'react'
+import { useState, useEffect } from 'react'
 import useSWR from 'swr'
 
 import { Venue } from '../../components/Search/Search'
-import fetcher from '../../utils/fetcher'
 import Layout from '../../components/Layout/Layout'
 import Search from '../../components/Search/Search'
 import VenueResult from '../../components/VenueResult/VenueResult'
 import useFetch, { HTTPVerbs } from '../../utils/useFetch';
 import * as styles from './home.styles'
+import Playlist from '../../components/Playlist/Playlist'
 
 const VENUE_SEARCH_URL: string = '/api/searchVenue';
 const CREATE_PLAYLIST_URL: string = '/api/createPlaylist';
 const SAVE_PLAYLIST_URL: string = '/api/savePlaylist';
 
+interface PlaylistData {
+  data: {
+    playlist_tracks: string[];
+    display_tracks: string[];
+  }
+}
+
 const Home: React.FC = () => {
   const [venueSearchParams, setVenueSearchParams]: any = useState(null);
-  const [playlistName, setPlaylistName]: [string, Dispatch<SetStateAction<string>>] = useState('');
-  const [playlistLoading, setPlaylistLoading]: [boolean, Dispatch<SetStateAction<boolean>>] = useState(false as boolean);
-  const [playlistError, setPlaylistError]: [boolean, Dispatch<SetStateAction<boolean>>] = useState(false as boolean);
+  const [displayTracks, setDisplayTracks] = useState([] as string[]);
+  const [playlistTracks, setPlaylistTracks] = useState([] as string[]);
+
+  const {
+    request: searchVenue,
+  } = useFetch();
 
   const { data: venueData, error: venueError }: any = useSWR(
     venueSearchParams
     ? `${VENUE_SEARCH_URL}?name=${venueSearchParams.name}&location=${venueSearchParams.location}`
     : null,
-    fetcher,
+    searchVenue,
     {
       errorRetryCount: 0,
       shouldRetryOnError: false,
@@ -51,31 +61,36 @@ const Home: React.FC = () => {
   }, [venueSearchParams])
 
   const handleVenueSearch = async (venue: Venue): Promise<void> => {
-    setPlaylistName('');
     setVenueSearchParams(venue);
+    setDisplayTracks([])
+    setPlaylistTracks([])
   }
 
   const {
     request: createPlaylist,
-    // loading,
-    // success,
-  } = useFetch();
-
-  const {
-    request: savePlaylist,
-    // loading,
-    // success,
+    loading: playlistLoading,
+    error: playlistError,
   } = useFetch();
 
   const handleCreatePlaylist = async (venueId: string): Promise<void> => {
-    setPlaylistLoading(true);
-    setPlaylistError(false);
-    const trackData = await createPlaylist(CREATE_PLAYLIST_URL, HTTPVerbs.POST, { venueId });
-    // @ts-ignore
-    console.log(trackData.data.playlist_tracks);
-    // @ts-ignore
-    const tracks = trackData.data.playlist_tracks;
-    await savePlaylist(SAVE_PLAYLIST_URL, HTTPVerbs.POST, { venueId, tracks });
+    const { data } = await createPlaylist(
+      CREATE_PLAYLIST_URL,
+      HTTPVerbs.POST,
+      { venueId }
+    ) as unknown as PlaylistData;
+
+    setDisplayTracks(data.display_tracks);
+    setPlaylistTracks(data.playlist_tracks);
+  };
+
+  const {
+    request: savePlaylist,
+    loading: saveLoading,
+    error: saveError,
+  } = useFetch();
+
+  const handleSavePlaylist = async (venueId: string): Promise<void> => {
+    await savePlaylist(SAVE_PLAYLIST_URL, HTTPVerbs.POST, { venueId, tracks: playlistTracks });
   };
 
   return (
@@ -109,15 +124,24 @@ const Home: React.FC = () => {
             </Flex>
           }
 
-          {!venueError && venueData?.data &&
+          {!venueError && venueData?.data && displayTracks.length === 0 &&
             <VenueResult
               venueId={venueData.data.venue_id}
               venueName={venueData.data.venue_name}
               venueLocation={venueData.data.venue_city}
-              playlistName={playlistName}
               playlistLoading={playlistLoading}
-              playlistError={playlistError}
+              playlistError={!!playlistError}
               handleCreatePlaylist={handleCreatePlaylist}
+            />
+          }
+
+          {displayTracks.length > 0 &&
+            <Playlist
+              venueId={venueData.data.venue_id}
+              displayTracks={displayTracks}
+              saveLoading={saveLoading}
+              saveError={!!saveError}
+              handleSavePlaylist={handleSavePlaylist}
             />
           }
         </Flex>

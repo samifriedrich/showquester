@@ -20,9 +20,9 @@ const Layout = ({ children }: {children: any}) => (
         minHeight: '100vh',
       }}
     >
-      <div>
+      <>
         {children}
-      </div>
+      </>
       <Footer />
     </Flex>
   </ThemeProvider>
