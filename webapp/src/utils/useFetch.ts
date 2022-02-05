@@ -40,8 +40,6 @@ const useFetch = (): PostResponse => {
     ): Promise<Response> => {
       setLoading(true);
 
-      console.log('fetching');
-
       const postOptions = {
         ...options,
         body: JSON.stringify(data),
@@ -55,11 +53,8 @@ const useFetch = (): PostResponse => {
       const json = await res.json();
       setSuccess(res.ok);
 
-      console.log(json);
-
       if (res.status === REDIRECT_STATUS) {
         const redirectUrl = json.url;
-        console.log('redirecting to ', redirectUrl);
         window.location.href = redirectUrl;
       }
 

@@ -28,15 +28,6 @@ REDIRECT_URI = "http://127.0.0.1:5000/callback"
 API_BASE = 'https://accounts.spotify.com'
 SHOW_DIALOG = True
 
-# This will become first
-# setting a single venue for testing
-venue_name = "Mississippi Studios"
-venue_url = "https://mississippistudios.com/"
-venue_city = "Portland"
-# will need to make state conditional, see jupyter notebook
-venue_id = '5776'
-
-
 ## Routes
 
 # "Landing page" endpoint for flask app
@@ -48,23 +39,18 @@ def index():
 @app.route("/venue", methods=['GET'])
 def venue():
     venue_name = request.args.get('name')
-    #venue_name = "Mississipp Studios"  # uncomment for testing
     venue_city = request.args.get('location')
-    #venue_city = "Portland"   # uncomment for testing 
     venue_info = get_venue_id(venue_name, venue_city)
     if venue_info:
-        # session['venue_info'] = venue_info
-        # print(session['venue_info']['venue_name'])
         return {
             'success': True,
             'data': {
-                'venue_id': venue_id,
-                'venue_name': venue_name,
-                'venue_city': venue_city,
+                'venue_id': venue_info['venue_id'],
+                'venue_name': venue_info['venue_name'],
+                'venue_city': venue_info['venue_city'],
             }
         }
     else:
-        # abort(404)
         return {
             'success': False,
             'error': {
@@ -77,11 +63,6 @@ def venue():
 @app.route("/playlist/create", methods=['GET'])
 def create():
     venue_id = request.args.get('venue_id')
-    print(venue_id)
-    # print('********')
-    # print(session)
-    # venue_id = session['venue_info']['venue_id']
-    # venue_id = '5776'  # Mississippi Studios
     # Client Credentials flow via spotipy (no user login required)
     client_credentials_manager = SpotifyClientCredentials()
     sp_cc = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
@@ -102,8 +83,6 @@ def create():
                 pl_tracks.append(track)
         pl_tracks = list(filter(None, pl_tracks))  # filter out empty strings where no track was found
         display_tracks = pl_tracks[0:100] # trim to 100
-        # session["display_tracks"] = display_tracks
-        # session["playlist_tracks"] = pl_tracks
         return {
             'success': True,
             'data': {

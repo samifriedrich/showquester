@@ -7,7 +7,6 @@ interface ResultProps {
   venueId: string;
   venueName: string;
   venueLocation: string;
-  playlistName: string | null;
   playlistLoading: boolean;
   playlistError: boolean;
   handleCreatePlaylist: (venueId: string) => Promise<void>;
@@ -18,7 +17,6 @@ const Result = (props: ResultProps) => {
     venueId,
     venueName,
     venueLocation,
-    playlistName,
     playlistLoading,
     playlistError,
     handleCreatePlaylist,
@@ -28,7 +26,7 @@ const Result = (props: ResultProps) => {
     <Flex sx={styles.resultContainer}>
       <Flex sx={styles.venueInfo}>
 
-        {!playlistError && !playlistLoading && !playlistName && 
+        {!playlistError && !playlistLoading && 
           <p sx={styles.resultText}>
             {venueName} &bull; {venueLocation}
           </p>
@@ -37,17 +35,6 @@ const Result = (props: ResultProps) => {
         {playlistLoading &&
           <p sx={styles.resultText}>
             Creating playlist&nbsp;&nbsp;&nbsp;&nbsp;
-          </p>
-        }
-
-        {!playlistError && !playlistLoading && playlistName && 
-          <p sx={styles.resultText}>
-            Playlist created:&nbsp;&nbsp;
-            <strong
-              sx={styles.createdPlaylistName}
-            >
-              {playlistName}
-            </strong>
           </p>
         }
 
@@ -63,11 +50,9 @@ const Result = (props: ResultProps) => {
           sx={styles.createPlaylistBtn}
           onClick={() => handleCreatePlaylist(venueId)}
         >
-          {playlistName 
-            ? 'Recreate Playlist' 
-            : playlistError 
-              ? 'Try Again' 
-              : 'Create Playlist'
+          {playlistError 
+            ? 'Try Again' 
+            : 'Create Playlist'
           }
         </Button>
       }
