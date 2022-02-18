@@ -1,4 +1,4 @@
-from app import app
+from app import application
 from flask import redirect, request
 import pandas as pd
 import spotipy
@@ -22,12 +22,12 @@ SHOW_DIALOG = True
 
 ## Routes
 
-@app.route('/index')
-@app.route('/')
+@application.route('/index')
+@application.route('/')
 def index():
     return "Welcome to ShowQuester. Go to http://127.0.0.1:5000/auth?playlist_id=123456 endpoint to begin."
 
-@app.route("/venue", methods=['GET'])
+@application.route("/venue", methods=['GET'])
 def venue():
     venue_name = request.args.get('name')
     venue_city = request.args.get('location')
@@ -50,7 +50,7 @@ def venue():
             }
         }
 
-@app.route("/playlist/create", methods=['GET'])
+@application.route("/playlist/create", methods=['GET'])
 def create():
     venue_id = request.args.get('venue_id')
     if venue_id:
@@ -69,14 +69,14 @@ def create():
         'success': False,
     }
 
-@app.route('/playlist/save', methods=['POST'])
+@application.route('/playlist/save', methods=['POST'])
 def save_playlist():
     data = request.get_json()
     venue_id = data['venue_id']
     auth_url = f'{API_BASE}/authorize?client_id={CLIENT_ID}&response_type=code&redirect_uri={REDIRECT_URI}&scope={SCOPE}&show_dialog={SHOW_DIALOG}&state={venue_id}'
     return redirect(auth_url)
 
-@app.route('/callback')
+@application.route('/callback')
 def callback():
     print(request)
     code = request.args.get('code')
@@ -324,4 +324,4 @@ def save_playlist_to_account(sp, venue_id):
     return playlist_uri
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    application.run(debug=True)
