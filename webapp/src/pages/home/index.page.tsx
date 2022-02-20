@@ -3,13 +3,13 @@ import { jsx, Box, Flex, Spinner } from 'theme-ui'
 import { useState, useEffect } from 'react'
 import useSWR from 'swr'
 
+import * as styles from './home.styles';
 import { Venue } from '../../components/Search/Search'
 import Layout from '../../components/Layout/Layout'
 import Search from '../../components/Search/Search'
 import VenueResult from '../../components/VenueResult/VenueResult'
 import useFetch, { HTTPVerbs } from '../../utils/useFetch';
-import * as styles from './home.styles'
-import Playlist from '../../components/Playlist/Playlist'
+import Playlist from '../../components/Playlist/Playlist';
 
 const VENUE_SEARCH_URL: string = '/api/searchVenue';
 const CREATE_PLAYLIST_URL: string = '/api/createPlaylist';
