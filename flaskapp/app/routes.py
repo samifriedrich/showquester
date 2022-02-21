@@ -5,16 +5,20 @@ import spotipy
 import spotipy.util as util
 from spotipy.oauth2 import SpotifyClientCredentials
 import os
+import json
 import requests
 import datetime
 from fuzzywuzzy import fuzz, process
 from math import ceil as round_up
 
+with open('/var/app/current/storage/secrets.json', 'r', encoding='utf-8') as j:
+    content = (j.read())
+    SECRETS = json.loads(content)
+
 ## API credentials from environmental variables
-SONGKICK_API_KEY = os.environ.get('SONGKICK_API_KEY')
-CLIENT_ID = os.environ.get('SPOTIFY_CLIENT_ID')
-CLIENT_SECRET = os.environ.get('SPOTIFY_CLIENT_SECRET')
-CLIENT_USERNAME = os.environ.get('SPOTIFY_USERNAME')
+SONGKICK_API_KEY = SECRETS.get('SONGKICK_API_KEY')
+CLIENT_ID = SECRETS.get('SPOTIFY_CLIENT_ID')
+CLIENT_SECRET = SECRETS.get('SPOTIFY_CLIENT_SECRET')
 SCOPE = 'playlist-modify-public'
 REDIRECT_URI = "http://127.0.0.1:5000/callback"
 API_BASE = 'https://accounts.spotify.com'
