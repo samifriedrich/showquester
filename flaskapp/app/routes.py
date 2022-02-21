@@ -1,20 +1,24 @@
-from app import app
+from app import application
 from flask import redirect, request
 import pandas as pd
 import spotipy
 import spotipy.util as util
 from spotipy.oauth2 import SpotifyClientCredentials
 import os
+import json
 import requests
 import datetime
 from fuzzywuzzy import fuzz, process
 from math import ceil as round_up
 
+with open('/var/app/current/storage/secrets.json', 'r', encoding='utf-8') as j:
+    content = (j.read())
+    SECRETS = json.loads(content)
+
 ## API credentials from environmental variables
-SONGKICK_API_KEY = os.environ.get('SONGKICK_API_KEY')
-CLIENT_ID = os.environ.get('SPOTIFY_CLIENT_ID')
-CLIENT_SECRET = os.environ.get('SPOTIFY_CLIENT_SECRET')
-CLIENT_USERNAME = os.environ.get('SPOTIFY_USERNAME')
+SONGKICK_API_KEY = SECRETS.get('SONGKICK_API_KEY')
+CLIENT_ID = SECRETS.get('SPOTIFY_CLIENT_ID')
+CLIENT_SECRET = SECRETS.get('SPOTIFY_CLIENT_SECRET')
 SCOPE = 'playlist-modify-public'
 REDIRECT_URI = "http://127.0.0.1:5000/callback"
 API_BASE = 'https://accounts.spotify.com'
@@ -22,12 +26,12 @@ SHOW_DIALOG = True
 
 ## Routes
 
-@app.route('/index')
-@app.route('/')
+@application.route('/index')
+@application.route('/')
 def index():
     return "Welcome to ShowQuester. Go to http://127.0.0.1:5000/auth?playlist_id=123456 endpoint to begin."
 
-@app.route("/venue", methods=['GET'])
+@application.route("/venue", methods=['GET'])
 def venue():
     venue_name = request.args.get('name')
     venue_city = request.args.get('location')
@@ -50,7 +54,7 @@ def venue():
             }
         }
 
-@app.route("/playlist/create", methods=['GET'])
+@application.route("/playlist/create", methods=['GET'])
 def create():
     venue_id = request.args.get('venue_id')
     if venue_id:
@@ -69,14 +73,14 @@ def create():
         'success': False,
     }
 
-@app.route('/playlist/save', methods=['POST'])
+@application.route('/playlist/save', methods=['POST'])
 def save_playlist():
     data = request.get_json()
     venue_id = data['venue_id']
     auth_url = f'{API_BASE}/authorize?client_id={CLIENT_ID}&response_type=code&redirect_uri={REDIRECT_URI}&scope={SCOPE}&show_dialog={SHOW_DIALOG}&state={venue_id}'
     return redirect(auth_url)
 
-@app.route('/callback')
+@application.route('/callback')
 def callback():
     print(request)
     code = request.args.get('code')
@@ -324,4 +328,4 @@ def save_playlist_to_account(sp, venue_id):
     return playlist_uri
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    application.run(debug=True)

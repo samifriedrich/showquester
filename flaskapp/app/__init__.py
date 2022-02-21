@@ -1,7 +1,8 @@
+from email.mime import application
 from flask import Flask
 from config import Config
 
-app = Flask(__name__)
-app.config.from_object(Config)
+application = Flask(__name__)
+application.config.from_object(Config)
 
 from app import routes
