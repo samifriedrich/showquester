@@ -20,7 +20,7 @@ SONGKICK_API_KEY = SECRETS.get('SONGKICK_API_KEY')
 CLIENT_ID = SECRETS.get('SPOTIFY_CLIENT_ID')
 CLIENT_SECRET = SECRETS.get('SPOTIFY_CLIENT_SECRET')
 SCOPE = 'playlist-modify-public'
-REDIRECT_URI = "http://127.0.0.1:5000/callback"
+REDIRECT_URI = "https://flaskapp-dev.us-east-1.elasticbeanstalk.com/callback"
 API_BASE = 'https://accounts.spotify.com'
 SHOW_DIALOG = True
 
@@ -58,10 +58,11 @@ def venue():
 def create():
     venue_id = request.args.get('venue_id')
     if venue_id:
-        client_credentials_manager = SpotifyClientCredentials()
+        client_credentials_manager = SpotifyClientCredentials(CLIENT_ID, CLIENT_SECRET)
         sp_cc = spotipy.Spotify(client_credentials_manager=client_credentials_manager) 
         playlist_tracks = venue_tracklist(sp_cc, venue_id)
-        display_tracks = playlist_tracks[0:100]
+        playlist_tracks = playlist_tracks[0:5]
+        display_tracks = playlist_tracks[0:5]
         return {
             'success': True,
             'data': {
