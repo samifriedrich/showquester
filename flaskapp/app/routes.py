@@ -10,6 +10,15 @@ import requests
 import datetime
 from fuzzywuzzy import fuzz, process
 from math import ceil as round_up
+import logging
+from logging.handlers import RotatingFileHandler
+
+logger = logging.getLogger(__name__)
+formatter = logging.Formatter('%(asctime)s %(levelname)s [%(filename)s:%(funcName)s:%(lineno)d] %(message)s')
+logger.setLevel(logging.os.getenv('LOG_LEVEL')) # changed from hard-coded
+handler = RotatingFileHandler(os.getenv('FLASK_LOG_FILE_PATH'), maxBytes=1000000,backupCount=5)
+handler.setFormatter(formatter)
+application.logger.addHandler(handler)
 
 with open('/var/app/current/storage/secrets.json', 'r', encoding='utf-8') as j:
     content = (j.read())
@@ -29,14 +38,16 @@ SHOW_DIALOG = True
 @application.route('/index')
 @application.route('/')
 def index():
-    return "Welcome to ShowQuester. Go to http://127.0.0.1:5000/auth?playlist_id=123456 endpoint to begin."
+    return "Welcome to ShowQuester."
 
 @application.route("/venue", methods=['GET'])
 def venue():
+    logger.info('PROCESS: Searching for venue')
     venue_name = request.args.get('name')
     venue_city = request.args.get('location')
     venue_info = get_venue_info(venue_name, venue_city)
     if venue_info:
+        logger.info(f'SUCCESS: venue_info \n {venue_info}')
         return {
             'success': True,
             'data': {
@@ -57,11 +68,13 @@ def venue():
 @application.route("/playlist/create", methods=['GET'])
 def create():
     venue_id = request.args.get('venue_id')
+    logger.info(f'PROCESS: Create playlist endpoint initiated for venue id: {venue_id}')
     if venue_id:
         client_credentials_manager = SpotifyClientCredentials(CLIENT_ID, CLIENT_SECRET)
         sp_cc = spotipy.Spotify(client_credentials_manager=client_credentials_manager) 
         playlist_tracks = venue_tracklist(sp_cc, venue_id)
         playlist_tracks = playlist_tracks[0:5]
+        logger.debug(f'playlist_tracks {playlist_tracks}')
         display_tracks = playlist_tracks[0:5]
         return {
             'success': True,
@@ -83,7 +96,7 @@ def save_playlist():
 
 @application.route('/callback')
 def callback():
-    print(request)
+    logger.debug(request)
     code = request.args.get('code')
     venue_id = request.args.get('state')
     auth_token_url = f"{API_BASE}/api/token"
@@ -95,7 +108,7 @@ def callback():
                 "client_secret":CLIENT_SECRET
                 })
     response_body = response.json()
-    print(response_body)
+    logger.debug(response_body)
     access_token = response_body.get("access_token")
     sp = spotipy.Spotify(auth=access_token)
     playlist_uri = save_playlist_to_account(sp, venue_id)
@@ -125,7 +138,7 @@ def get_venue_info(venue_name=None, venue_city=None, venue_id=None):
                 else:
                     continue
     else:
-        print(f'No venue found for {venue_name} in {venue_city}.')
+        logger.info(f'No venue found for {venue_name} in {venue_city}.')
         
 def venue_dict(venue_obj):
     """Extract relevant fields from Songkick venue object"""
@@ -140,6 +153,7 @@ def venue_dict(venue_obj):
 
 def get_venue_events(venue_id):
     """Returns a list of upcoming event objects from Songkick for a given venue."""
+    logger.info('PROCESS: Running get_venue_events')
     req = f'https://api.songkick.com/api/3.0/venues/{venue_id}/calendar.json?apikey={SONGKICK_API_KEY}'
     response = requests.get(req)
     num_results_per_page = response.json()['resultsPage']['perPage']
@@ -154,10 +168,11 @@ def get_venue_events(venue_id):
             venue_events.extend(page_events)
     else:
         venue_events = response.json()['resultsPage']['results'].get('event')
-    if venue_events is not None:    
+    if venue_events is not None:
+        logger.info('SUCCESS: Venue events found')    
         return venue_events
     else:
-        print(">>>>>>>>>> EVENT LIST ERROR: No events for this venue.")
+        logger.info("ERROR: No events found for this venue.")
 
 def events_df(event_list, limit=None):
     """Creates a dataframe out of Songkick events results.
@@ -216,11 +231,11 @@ def get_top_track(sp, artist_uri):
                 continue
         if not top_track:
             top_track_uri = top_tracks[0]['uri']
-            print(f"\tCheck {artist_uri}'s top track: {top_track_uri}")
+            logger.info(f"SPOTIFY-CHECK: Check {artist_uri}'s top track: {top_track_uri}")
             return top_track_uri
     else:
         artist_name = sp.artist(artist_uri)['name']
-        print(f'\tNOT FOUND: No tracks found for {artist_name}')
+        logger.info(f'SPOTIFY-CHECK: No tracks found for {artist_name}')
         
 def show_list(venue_id):
     """Retrieves Songkick show data for a venue. Returns a pandas dataframe"""
@@ -312,6 +327,7 @@ def name_playlist(venue_id):
     venue_name = venue_info.get('name')
     venue_city = venue_info.get('city')
     playlist_name = f"ShowQuester: {venue_name} in {venue_city}"  # Note: duplicate names do not seem to be an issue for Spotify
+    logger.debug(playlist_name)
     return playlist_name
 
 def save_playlist_to_account(sp, venue_id):
@@ -325,7 +341,7 @@ def save_playlist_to_account(sp, venue_id):
     results = add_tracks(sp, playlist_id, playlist_tracks)
     playlist_description = build_playlist_description(venue_id)
     results = update_playlist_details(sp, playlist_id, playlist_name, playlist_description)
-    print(f'Created playlist "{playlist_name}"')
+    logger.info(f'Created playlist "{playlist_name}"')
     return playlist_uri
 
 if __name__ == "__main__":
