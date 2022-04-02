@@ -2,6 +2,7 @@
 import { jsx, Box, Flex, Spinner } from 'theme-ui'
 import { useState, useEffect } from 'react'
 import useSWR from 'swr'
+import { Logger } from 'aws-amplify';
 
 import * as styles from './home.styles';
 import { Venue } from '../../components/Search/Search'
@@ -22,10 +23,14 @@ interface PlaylistData {
   }
 }
 
+const logger = new Logger('home');
+
 const Home: React.FC = () => {
   const [venueSearchParams, setVenueSearchParams]: any = useState(null);
   const [displayTracks, setDisplayTracks] = useState([] as string[]);
   const [playlistTracks, setPlaylistTracks] = useState([] as string[]);
+
+  logger.info('Loaded!');
 
   const {
     request: searchVenue,
@@ -73,11 +78,15 @@ const Home: React.FC = () => {
   } = useFetch();
 
   const handleCreatePlaylist = async (venueId: string): Promise<void> => {
+    logger.info('FRONTEND: Creating playlist');
     const { data } = await createPlaylist(
       CREATE_PLAYLIST_URL,
       HTTPVerbs.POST,
       { venueId }
     ) as unknown as PlaylistData;
+
+    logger.info('FRONTEND: Playlist data:');
+    logger.info(JSON.stringify(data));
 
     setDisplayTracks(data.display_tracks);
     setPlaylistTracks(data.playlist_tracks);
