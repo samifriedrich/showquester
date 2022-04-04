@@ -1,13 +1,11 @@
 /** @jsx jsx */
 import { jsx, Box, Flex, Spinner } from 'theme-ui'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import useSWR from 'swr'
-import { Logger } from 'aws-amplify';
 
 import * as styles from './home.styles';
-import { Venue } from '../../components/Search/Search'
 import Layout from '../../components/Layout/Layout'
-import Search from '../../components/Search/Search'
+import Search, { Venue } from '../../components/Search/Search'
 import VenueResult from '../../components/VenueResult/VenueResult'
 import useFetch, { HTTPVerbs } from '../../utils/useFetch';
 import Playlist from '../../components/Playlist/Playlist';
@@ -23,22 +21,18 @@ interface PlaylistData {
   }
 }
 
-const logger = new Logger('home');
-
 const Home: React.FC = () => {
-  const [venueSearchParams, setVenueSearchParams]: any = useState(null);
+  const [venue, setVenue]: any = useState(null);
   const [displayTracks, setDisplayTracks] = useState([] as string[]);
   const [playlistTracks, setPlaylistTracks] = useState([] as string[]);
-
-  logger.info('Loaded!');
 
   const {
     request: searchVenue,
   } = useFetch();
 
   const { data: venueData, error: venueError }: any = useSWR(
-    venueSearchParams
-    ? `${VENUE_SEARCH_URL}?name=${venueSearchParams.name}&location=${venueSearchParams.location}`
+    venue
+    ? `${VENUE_SEARCH_URL}?name=${venue.name}&city=${venue.city}`
     : null,
     searchVenue,
     {
@@ -48,25 +42,8 @@ const Home: React.FC = () => {
     }
   );
 
-  useEffect(() => {
-    if (process.browser) {
-      const name = sessionStorage.getItem('venueName');
-      const location = sessionStorage.getItem('venueLocation');
-
-      if (name && location && !venueSearchParams) {
-        setVenueSearchParams({
-          name,
-          location,
-        });
-      } else if (venueSearchParams) {
-        sessionStorage.setItem('venueName', venueSearchParams.name);
-        sessionStorage.setItem('venueLocation', venueSearchParams.location);
-      }
-    }
-  }, [venueSearchParams])
-
   const handleVenueSearch = async (venue: Venue): Promise<void> => {
-    setVenueSearchParams(venue);
+    setVenue(venue);
     setDisplayTracks([])
     setPlaylistTracks([])
   }
@@ -78,15 +55,11 @@ const Home: React.FC = () => {
   } = useFetch();
 
   const handleCreatePlaylist = async (venueId: string): Promise<void> => {
-    logger.info('FRONTEND: Creating playlist');
     const { data } = await createPlaylist(
       CREATE_PLAYLIST_URL,
       HTTPVerbs.POST,
       { venueId }
     ) as unknown as PlaylistData;
-
-    logger.info('FRONTEND: Playlist data:');
-    logger.info(JSON.stringify(data));
 
     setDisplayTracks(data.display_tracks);
     setPlaylistTracks(data.playlist_tracks);
@@ -124,10 +97,10 @@ const Home: React.FC = () => {
             </Flex>
           }
 
-          {!venueError && venueSearchParams && !venueData &&
+          {!venueError && venue && !venueData &&
             <Flex sx={styles.resultContainer}>
               Searching for&nbsp;
-              <strong>{venueSearchParams.name}</strong>
+              <strong>{venue.name}</strong>
               &nbsp;&nbsp;&nbsp;&nbsp;
               <Spinner size={36} />
             </Flex>

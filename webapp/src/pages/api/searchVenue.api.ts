@@ -5,8 +5,8 @@ const FLASK_APP_URL: string = process.env.FLASK_APP_URL as string;
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method === 'GET') {
-    const { name, location } = req.query;
-    const venueData = await fetch(`${FLASK_APP_URL}/venue?location=${location}&name=${name}`);
+    const { name, city } = req.query;
+    const venueData = await fetch(`${FLASK_APP_URL}/venue?city=${city}&name=${name}`);
     const venue = await venueData.json();
     return res.status(200).send(venue);
   } else {

@@ -44,7 +44,7 @@ def index():
 def venue():
     logger.info('PROCESS: Searching for venue')
     venue_name = request.args.get('name')
-    venue_city = request.args.get('location')
+    venue_city = request.args.get('city')
     venue_info = get_venue_info(venue_name, venue_city)
     if venue_info:
         logger.info(f'SUCCESS: venue_info \n {venue_info}')
