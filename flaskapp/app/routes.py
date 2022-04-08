@@ -25,8 +25,10 @@ CLIENT_ID = application.config['CLIENT_ID']
 CLIENT_SECRET = application.config['CLIENT_SECRET']
 SCOPE = application.config['SCOPE']
 REDIRECT_URI = application.config['REDIRECT_URI']
-API_BASE = application.config['API_BASE']
+AUTH_BASE = application.config['AUTH_BASE']
+HOME = application.config['HOME']
 MAX_TRACKS = application.config['MAX_TRACKS']
+SHOW_DIALOG = True
 
 ## Routes
 
@@ -87,7 +89,7 @@ def create():
 def save_playlist():
     data = request.get_json()
     venue_id = data['venue_id']
-    auth_url = f'{API_BASE}/authorize?client_id={CLIENT_ID}&response_type=code&redirect_uri={REDIRECT_URI}&scope={SCOPE}&show_dialog={SHOW_DIALOG}&state={venue_id}'
+    auth_url = f'{AUTH_BASE}/authorize?client_id={CLIENT_ID}&response_type=code&redirect_uri={REDIRECT_URI}&scope={SCOPE}&show_dialog={SHOW_DIALOG}&state={venue_id}'
     return redirect(auth_url)
 
 @application.route('/callback')
@@ -95,7 +97,7 @@ def callback():
     logger.debug(request)
     code = request.args.get('code')
     venue_id = request.args.get('state')
-    auth_token_url = f"{API_BASE}/api/token"
+    auth_token_url = f"{AUTH_BASE}/api/token"
     response = requests.post(auth_token_url, data={
                 "grant_type":"authorization_code",
                 "code":code,
@@ -107,9 +109,10 @@ def callback():
     logger.debug(response_body)
     access_token = response_body.get("access_token")
     sp = spotipy.Spotify(auth=access_token)
-    playlist_uri = save_playlist_to_account(sp, venue_id)
-    # showquester.com/success?playlist_uri=playlist_uri
-    return f'Playlist created: {playlist_uri}.'
+    playlist_id = save_playlist_to_account(sp, venue_id)
+    logger.info(f'Playlist created: {playlist_id}.')
+    redirect_url = f"{HOME}/success?playlist_id={playlist_id}"
+    return redirect(redirect_url)
         
 ## Functions
 
@@ -343,4 +346,4 @@ def save_playlist_to_account(sp, venue_id):
     playlist_description = build_playlist_description(venue_id)
     results = update_playlist_details(sp, playlist_id, playlist_name, playlist_description)
     logger.info(f'Created playlist "{playlist_name}"')
-    return playlist_uri
+    return playlist_id
