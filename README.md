@@ -8,6 +8,7 @@ Sami Friedrich, Python Developer
 - [LinkedIn](https://www.linkedin.com/in/sami-friedrich/)
 
 Devin Owen, Web Developer
+- [LinkedIn](https://www.linkedin.com/in/devinowen/)
  
 ## License
 This project is licensed under the MIT License - see the [LICENSE.md](https://github.com/samifriedrich/showquester/blob/master/LICENSE) file for details.
