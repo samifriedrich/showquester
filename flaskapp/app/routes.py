@@ -126,7 +126,7 @@ def get_venue_info(venue_name=None, venue_city=None, venue_id=None):
         venue_obj = response.json()['resultsPage']['results']['venue']
         return venue_dict(venue_obj)
     elif venue_name is not None:
-        req = f'https://api.songkick.com/api/3.0/search/venues.json?query={venue_name}&apikey={sk_api_key}'
+        req = f'https://api.songkick.com/api/3.0/search/venues.json?query={venue_name}&apikey={SONGKICK_API_KEY}'
         response = requests.get(req)
         num_results = response.json()['resultsPage']['totalEntries']
         if num_results == 0:
