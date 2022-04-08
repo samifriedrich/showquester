@@ -1,7 +1,11 @@
 branch-defaults:
+  cfg_handling:
+    environment: flaskapp-dev
   elasticbeanstalk-2:
     environment: flaskapp-dev
     group_suffix: null
+  main:
+    environment: flaskapp-dev
 global:
   application_name: flaskapp
   branch: null

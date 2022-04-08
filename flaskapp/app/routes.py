@@ -5,7 +5,6 @@ import spotipy
 import spotipy.util as util
 from spotipy.oauth2 import SpotifyClientCredentials
 import os
-import json
 import requests
 import datetime
 from fuzzywuzzy import fuzz, process
@@ -15,30 +14,27 @@ from logging.handlers import RotatingFileHandler
 
 logger = logging.getLogger(__name__)
 formatter = logging.Formatter('%(asctime)s %(levelname)s [%(filename)s:%(funcName)s:%(lineno)d] %(message)s')
-logger.setLevel(logging.os.getenv('LOG_LEVEL')) # changed from hard-coded
+logger.setLevel(logging.os.getenv('LOG_LEVEL'))
 handler = RotatingFileHandler(os.getenv('FLASK_LOG_FILE_PATH'), maxBytes=1000000,backupCount=5)
 handler.setFormatter(formatter)
 application.logger.addHandler(handler)
 
-with open('/var/app/current/storage/secrets.json', 'r', encoding='utf-8') as j:
-    content = (j.read())
-    SECRETS = json.loads(content)
-
-## API credentials from environmental variables
-SONGKICK_API_KEY = SECRETS.get('SONGKICK_API_KEY')
-CLIENT_ID = SECRETS.get('SPOTIFY_CLIENT_ID')
-CLIENT_SECRET = SECRETS.get('SPOTIFY_CLIENT_SECRET')
-SCOPE = 'playlist-modify-public'
-REDIRECT_URI = "https://flaskapp-dev.us-east-1.elasticbeanstalk.com/callback"
-API_BASE = 'https://accounts.spotify.com'
-SHOW_DIALOG = True
+## Configured vars
+SONGKICK_API_KEY = application.config['SONGKICK_API_KEY']
+CLIENT_ID = application.config['CLIENT_ID']
+CLIENT_SECRET = application.config['CLIENT_SECRET']
+SCOPE = application.config['SCOPE']
+REDIRECT_URI = application.config['REDIRECT_URI']
+API_BASE = application.config['API_BASE']
+MAX_TRACKS = application.config['MAX_TRACKS']
 
 ## Routes
 
 @application.route('/index')
 @application.route('/')
 def index():
-    return "Welcome to ShowQuester."
+    display_text = f"This flask app is running in mode: {application.config['ENV']}"
+    return display_text
 
 @application.route("/venue", methods=['GET'])
 def venue():
@@ -73,7 +69,7 @@ def create():
         client_credentials_manager = SpotifyClientCredentials(CLIENT_ID, CLIENT_SECRET)
         sp_cc = spotipy.Spotify(client_credentials_manager=client_credentials_manager) 
         playlist_tracks = venue_tracklist(sp_cc, venue_id)
-        playlist_tracks = playlist_tracks[0:5]
+        playlist_tracks = playlist_tracks[0:MAX_TRACKS]
         logger.debug(f'playlist_tracks {playlist_tracks}')
         display_tracks = playlist_tracks[0:5]
         return {
@@ -174,7 +170,7 @@ def get_venue_events(venue_id):
     else:
         logger.info("ERROR: No events found for this venue.")
 
-def events_df(event_list, limit=None):
+def events_df(event_list, limit=MAX_TRACKS):
     """Creates a dataframe out of Songkick events results.
     Excludes events flagged on Songkick as 'cancelled'."""
     dates = []
@@ -343,6 +339,3 @@ def save_playlist_to_account(sp, venue_id):
     results = update_playlist_details(sp, playlist_id, playlist_name, playlist_description)
     logger.info(f'Created playlist "{playlist_name}"')
     return playlist_uri
-
-if __name__ == "__main__":
-    application.run(debug=True)
