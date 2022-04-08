@@ -1,8 +1,13 @@
-from email.mime import application
 from flask import Flask
-from config import Config
+import config
 
 application = Flask(__name__)
-application.config.from_object(Config)
+
+if application.config['ENV'] == "production":
+    application.config.from_object(config.ProductionConfig)
+elif application.config['ENV'] == "testing":
+    application.config.from_object(config.TestingConfig)
+else:
+    application.config.from_object(config.DevelopmentConfig)
 
 from app import routes

@@ -6,3 +6,6 @@
 
 # Logging
 *.log
+
+# Keys and secrets
+secrets.json

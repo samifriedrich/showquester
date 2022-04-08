@@ -1,0 +1,13 @@
+# Logging
+flask-app.log
+
+# Keys and secrets
+secrets.json
+
+# cache
+.cache
+
+# local development files
+.flaskenv
+.env
+.vscode
