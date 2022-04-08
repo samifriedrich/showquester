@@ -44,7 +44,7 @@ def index():
 def venue():
     logger.info('PROCESS: Searching for venue')
     venue_name = request.args.get('name')
-    venue_city = request.args.get('location')
+    venue_city = request.args.get('city')
     venue_info = get_venue_info(venue_name, venue_city)
     if venue_info:
         logger.info(f'SUCCESS: venue_info \n {venue_info}')
@@ -129,7 +129,12 @@ def get_venue_info(venue_name=None, venue_city=None, venue_id=None):
         req = f'https://api.songkick.com/api/3.0/search/venues.json?query={venue_name}&apikey={SONGKICK_API_KEY}'
         response = requests.get(req)
         num_results = response.json()['resultsPage']['totalEntries']
-        if num_results > 0:
+        if num_results == 0:
+            logger.info(f'No venue found for {venue_name} in {venue_city}.')
+        elif num_results == 1 or venue_city == "":
+            venue_obj = response.json()['resultsPage']['results']['venue'][0]
+            return venue_dict(venue_obj)
+        else:
             results = response.json()['resultsPage']['results']['venue']
             for venue_obj in results:
                 result_city = venue_obj['city']['displayName']
@@ -138,7 +143,7 @@ def get_venue_info(venue_name=None, venue_city=None, venue_id=None):
                 else:
                     continue
     else:
-        logger.info(f'No venue found for {venue_name} in {venue_city}.')
+        logger.info(f'ERROR: More information needed to complete venue search.')
         
 def venue_dict(venue_obj):
     """Extract relevant fields from Songkick venue object"""
@@ -344,5 +349,3 @@ def save_playlist_to_account(sp, venue_id):
     logger.info(f'Created playlist "{playlist_name}"')
     return playlist_uri
 
-if __name__ == "__main__":
-    application.run(debug=True)

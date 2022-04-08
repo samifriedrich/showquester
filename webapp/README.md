@@ -5,7 +5,8 @@
 First, ensure that you have a `.env.development.local` (or similar) file with the following credentials:
 
 ```
-FLASK_APP_URL="http://localhost:5000"
+FLASK_APP_URL=http://localhost:5000
+MAPS_API_KEY=xxxxxxx
 ```
 
 Next, `cd` into the `webapp` directory and run the development server:

@@ -1,22 +1,47 @@
 /** @jsx jsx */
-import { jsx, Box, Button, Flex, Label, Input } from 'theme-ui'
+import { jsx, Box, Flex, Label, Input, Button } from 'theme-ui'
 import { useState } from 'react';
+import { usePlacesWidget } from 'react-google-autocomplete';
 
-import * as styles from './Search.styles'
+import * as styles from './Search.styles';
+
+type AddressComponent = {
+  types: string[];
+  long_name: string;
+  short_name: string;
+};
 
 export interface Venue {
   name: string;
-  location: string;
+  city: string;
 }
 
 interface SearchProps {
-  handleVenueSearch: (arg0: Venue) => void;
+  handleVenueSearch: (venue: Venue) => void;
 }
 
-const Search = ({ handleVenueSearch }: SearchProps) => {
+const MAPS_API_KEY: string = process.env.MAPS_API_KEY as string;
 
+const Search = ({ handleVenueSearch }: SearchProps) => {
   const [name, setVenueName] = useState('');
-  const [location, setLocation] = useState('');
+
+  const { ref } = usePlacesWidget({
+    apiKey: MAPS_API_KEY,
+    onPlaceSelected: (selection: { name: string, address_components: any }) => {
+      const { name, address_components } = selection;
+      const formattedName = name.split(',')[0];
+      const city = address_components.find((comp: AddressComponent) => comp.types.includes('locality'))?.long_name || '';
+
+      handleVenueSearch({
+        name: formattedName,
+        city,
+      });
+    },
+    options: {
+      types: ['establishment'],
+      fields: ['name', 'address_components'],
+    },
+  });
 
   return (
     <Flex
@@ -30,25 +55,20 @@ const Search = ({ handleVenueSearch }: SearchProps) => {
           name="name"
           type="text"
           value={name}
-          onChange={event => setVenueName(event.target.value)}
+          // @ts-ignore
+          ref={ref}
+          autoComplete="off"
+          onChange={event => {
+            setVenueName(event.target.value);
+          }}
         />
-      </Box>
-
-      <Box sx={styles.inputBox}>
-        <Label htmlFor="location">City</Label>
-        <Input
-          name="location"
-          type="text"
-          value={location}
-          onChange={event => setLocation(event.target.value)}
-          />
       </Box>
 
       <Button
         sx={!name || !location ? styles.searchBtnDisabled : styles.searchBtn}
         type="submit"
         disabled={!name || !location}
-        onClick={() => handleVenueSearch({name, location})}
+        onClick={() => handleVenueSearch({name, city: ''})}
       >
         Search
       </Button>
