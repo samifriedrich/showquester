@@ -1,5 +1,24 @@
 /** @jsx jsx */
-import { jsx, Button, Flex, Spinner } from 'theme-ui'
+import {
+  jsx,
+  // Button,
+  Flex,
+  Spinner,
+  Grid,
+  Box,
+  Text,
+} from 'theme-ui'
+import { useState } from 'react';
+import { keyframes } from '@emotion/react'
+
+const wave = keyframes({
+  from: {
+    backgroundPosition: '-468px 0'
+  },
+  to: {
+    backgroundPosition: '468px 0'
+  }
+});
 
 import * as styles from './Playlist.styles'
 
@@ -12,12 +31,13 @@ interface PlaylistProps {
 }
 
 const Playlist = (props: PlaylistProps) => {
+  const [iframesLoaded, setIframesLoaded] = useState(false);
   const {
-    venueId,
+    // venueId,
     displayTracks,
     saveLoading,
     saveError,
-    handleSavePlaylist,
+    // handleSavePlaylist,
   } = props;
 
   return (
@@ -44,7 +64,7 @@ const Playlist = (props: PlaylistProps) => {
           }
         </Flex>
 
-        {!saveLoading &&
+        {/* {!saveLoading &&
           <Button
             sx={styles.savePlaylistBtn}
             onClick={() => handleSavePlaylist(venueId)}
@@ -54,7 +74,7 @@ const Playlist = (props: PlaylistProps) => {
               : 'Save Playlist to Account'
             }
           </Button>
-        }
+        } */}
 
         {saveLoading &&
           <Spinner size={36} />
@@ -67,17 +87,42 @@ const Playlist = (props: PlaylistProps) => {
             Here are a few of the first tracks:
           </p>
 
-          {displayTracks.map((track) => (
-            <iframe
-              key={track}
-              sx={styles.track}
-              src={`https://open.spotify.com/embed/track/${track.split(':')[2]}`}
-              width="300"
-              height="380"
-              frameBorder="0"
-              allow="encrypted-media"
-            />
-          ))}
+          <Grid gap={3} columns={[1, 1, 2, 3, 4]}>
+            {displayTracks.map((track) => (
+              <Box
+                key={track}
+                css={{
+                  position: 'relative',
+                }}
+              >
+                <iframe
+                  sx={{
+                    ...styles.track,
+                    animation: `${wave} 6s infinite ease-out`,
+                    boxShadow: iframesLoaded ? '4px 4px 30px -1px rgba(92,106,196,0.75)' : '0 0 0 0',
+                  }}
+                  src={`https://open.spotify.com/embed/track/${track.split(':')[2]}`}
+                  width="300"
+                  height="380"
+                  frameBorder="0"
+                  allow="encrypted-media"
+                  onLoad={() => setIframesLoaded(true)}
+                />
+                {iframesLoaded &&
+                  <Text
+                    sx={styles.date} 
+                    css={{
+                      position: 'absolute',
+                    }}
+                  >
+                    August 22
+                  </Text>
+                }
+              </Box>
+            ))}
+          </Grid>
+
+          
         </>
       }
     </>

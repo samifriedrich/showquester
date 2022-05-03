@@ -28,6 +28,16 @@ export const savePlaylistBtn = {
 
 export const track = {
   mt: 4,
-  boxShadow: '4px 4px 30px -1px rgba(92,106,196,0.75)',
   borderRadius: '5px',
+  background: 'linear-gradient(to right, rgba(130, 130, 130, 0.2) 8%, rgba(130, 130, 130, 0.3) 18%, rgba(130, 130, 130, 0.2) 33%)',
+}
+
+export const date = {
+  color: 'white',
+  backgroundColor: 'rgba(0, 0, 0, 0.75)',
+  padding: 3,
+  paddingLeft: 4,
+  borderRadius: '5px',
+  width: '100%',
+  bottom: '5px',
 }
