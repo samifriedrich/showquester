@@ -10,9 +10,11 @@ class Config(object):
     TESTING = False
     LOG_LEVEL = 'INFO'
     SECRET_KEY = SECRETS.get('FLASK_SECRET_KEY')
-    SONGKICK_API_KEY = SECRETS.get('SONGKICK_API_KEY')
-    CLIENT_ID = SECRETS.get('SPOTIFY_CLIENT_ID')
-    CLIENT_SECRET = SECRETS.get('SPOTIFY_CLIENT_SECRET')
+    SEATGEEK_API_BASE = 'https://api.seatgeek.com/2'
+    SEATGEEK_CLIENT_ID = SECRETS.get('SEATGEEK_CLIENT_ID')
+    SEATGEEK_CLIENT_SECRET = SECRETS.get('SEATGEEK_CLIENT_SECRET')
+    SPOTIFY_CLIENT_ID = SECRETS.get('SPOTIFY_CLIENT_ID')
+    SPOTIFY_CLIENT_SECRET = SECRETS.get('SPOTIFY_CLIENT_SECRET')
     SCOPE = 'playlist-modify-public'
     REDIRECT_URI = "https://flaskapp-dev.us-east-1.elasticbeanstalk.com/callback"
     #REDIRECT_URI = "https://www.showquester.com/callback"
