@@ -9,7 +9,8 @@ The following files must be in the flaskapp/ directory on your local machine:
 The `secrets.json` file should define the following credentials:
 ```json
 {
-    "SONGKICK_API_KEY": "YOUR-KEY-HERE",
+    "SEATGEEK_CLIENT_ID": "YOUR-KEY-HERE",
+    "SEATGEEK_CLIENT_SECRET": "YOUR-KEY-HERE",
     "SPOTIFY_CLIENT_ID": "YOUR-KEY-HERE",
     "SPOTIFY_CLIENT_SECRET": "YOUR-KEY-HERE",
     "FLASK_SECRET_KEY": "YOUR-KEY-HERE"
