@@ -5,9 +5,9 @@ branch-defaults:
     environment: flaskapp-dev
     group_suffix: null
   main:
-    environment: flaskapp-dev
+    environment: seatgeek
   seatgeek:
-    environment: flaskapp-dev
+    environment: seatgeek
 environment-defaults:
   flaskapp-dev:
     branch: null

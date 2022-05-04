@@ -75,7 +75,7 @@ def create():
         playlist_tracks = venue_tracklist(sp_cc, venue_id)
         playlist_tracks = playlist_tracks[0:MAX_TRACKS]
         logger.debug(f'playlist_tracks {playlist_tracks}')
-        display_tracks = playlist_tracks[0:5]
+        display_tracks = playlist_tracks[0:MAX_TRACKS]
         return {
             'success': True,
             'data': {

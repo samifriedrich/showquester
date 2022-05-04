@@ -32,7 +32,7 @@ class DevelopmentConfig(Config):
     LOG_LEVEL = 'DEBUG'
     REDIRECT_URI = "http://127.0.0.1:5000/callback"
     HOME = "http://localhost:3000"
-    MAX_TRACKS = 5
+    MAX_TRACKS = 10
 
 class TestingConfig(Config):
     TESTING = True
