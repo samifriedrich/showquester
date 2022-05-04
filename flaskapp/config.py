@@ -16,7 +16,8 @@ class Config(object):
     SPOTIFY_CLIENT_ID = SECRETS.get('SPOTIFY_CLIENT_ID')
     SPOTIFY_CLIENT_SECRET = SECRETS.get('SPOTIFY_CLIENT_SECRET')
     SCOPE = 'playlist-modify-public'
-    REDIRECT_URI = "https://flaskapp-dev.us-east-1.elasticbeanstalk.com/callback"
+    REDIRECT_URI = "https://seatgeek.us-east-1.elasticbeanstalk.com"
+    #REDIRECT_URI = "https://flaskapp-dev.us-east-1.elasticbeanstalk.com/callback"
     #REDIRECT_URI = "https://www.showquester.com/callback"
     AUTH_BASE = 'https://accounts.spotify.com'
     HOME = 'https://www.showquester.com'
