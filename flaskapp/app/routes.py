@@ -20,9 +20,11 @@ handler.setFormatter(formatter)
 application.logger.addHandler(handler)
 
 ## Configured vars
-SONGKICK_API_KEY = application.config['SONGKICK_API_KEY']
-CLIENT_ID = application.config['CLIENT_ID']
-CLIENT_SECRET = application.config['CLIENT_SECRET']
+SEATGEEK_CLIENT_ID = application.config['SEATGEEK_CLIENT_ID']
+SEATGEEK_CLIENT_SECRET = application.config['SEATGEEK_CLIENT_SECRET']
+SEATGEEK_API_BASE = application.config['SEATGEEK_API_BASE']
+SPOTIFY_CLIENT_ID = application.config['SPOTIFY_CLIENT_ID']
+SPOTIFY_CLIENT_SECRET = application.config['SPOTIFY_CLIENT_SECRET']
 SCOPE = application.config['SCOPE']
 REDIRECT_URI = application.config['REDIRECT_URI']
 AUTH_BASE = application.config['AUTH_BASE']
@@ -68,12 +70,12 @@ def create():
     venue_id = request.args.get('venue_id')
     logger.info(f'PROCESS: Create playlist endpoint initiated for venue id: {venue_id}')
     if venue_id:
-        client_credentials_manager = SpotifyClientCredentials(CLIENT_ID, CLIENT_SECRET)
+        client_credentials_manager = SpotifyClientCredentials(SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET)
         sp_cc = spotipy.Spotify(client_credentials_manager=client_credentials_manager) 
         playlist_tracks = venue_tracklist(sp_cc, venue_id)
         playlist_tracks = playlist_tracks[0:MAX_TRACKS]
         logger.debug(f'playlist_tracks {playlist_tracks}')
-        display_tracks = playlist_tracks[0:5]
+        display_tracks = playlist_tracks[0:MAX_TRACKS]
         return {
             'success': True,
             'data': {
@@ -89,7 +91,7 @@ def create():
 def save_playlist():
     data = request.get_json()
     venue_id = data['venue_id']
-    auth_url = f'{AUTH_BASE}/authorize?client_id={CLIENT_ID}&response_type=code&redirect_uri={REDIRECT_URI}&scope={SCOPE}&show_dialog={SHOW_DIALOG}&state={venue_id}'
+    auth_url = f'{AUTH_BASE}/authorize?client_id={SPOTIFY_CLIENT_ID}&response_type=code&redirect_uri={REDIRECT_URI}&scope={SCOPE}&show_dialog={SHOW_DIALOG}&state={venue_id}'
     return redirect(auth_url)
 
 @application.route('/callback')
@@ -102,8 +104,8 @@ def callback():
                 "grant_type":"authorization_code",
                 "code":code,
                 "redirect_uri":REDIRECT_URI,
-                "client_id":CLIENT_ID,
-                "client_secret":CLIENT_SECRET
+                "client_id":SPOTIFY_CLIENT_ID,
+                "client_secret":SPOTIFY_CLIENT_SECRET
                 })
     response_body = response.json()
     logger.debug(response_body)
@@ -116,96 +118,121 @@ def callback():
         
 ## Functions
 
-def get_venue_info(venue_name=None, venue_city=None, venue_id=None):
-    """Search for venue and retrieve info from Songkick.
-    To handle duplicate venue names, this function will check that venue's city matches that entered in venues.csv""" 
-    if venue_id is not None:
-        req = f'https://api.songkick.com/api/3.0/venues/{venue_id}.json?apikey={SONGKICK_API_KEY}'
-        response = requests.get(req)
-        venue_obj = response.json()['resultsPage']['results']['venue']
-        return venue_dict(venue_obj)
-    elif venue_name is not None:
-        req = f'https://api.songkick.com/api/3.0/search/venues.json?query={venue_name}&apikey={SONGKICK_API_KEY}'
-        response = requests.get(req)
-        num_results = response.json()['resultsPage']['totalEntries']
-        if num_results == 0:
-            logger.info(f'No venue found for {venue_name} in {venue_city}.')
-        elif num_results == 1 or venue_city == "":
-            venue_obj = response.json()['resultsPage']['results']['venue'][0]
-            return venue_dict(venue_obj)
-        else:
-            results = response.json()['resultsPage']['results']['venue']
-            for venue_obj in results:
-                result_city = venue_obj['city']['displayName']
-                if result_city == venue_city:
-                    return venue_dict(venue_obj)
-                else:
-                    continue
+def seatgeek_request(endpoint, venue_id = None, params = None):
+    """Format a request to SeatGeek API"""
+    parameters = {'client_id': SEATGEEK_CLIENT_ID,
+                 'client_secret': SEATGEEK_CLIENT_SECRET}
+    if params is not None:
+        for key, value in params.items():
+            parameters[key] = value
+    if venue_id is not None and endpoint == 'venues':
+        request_base = f'{SEATGEEK_API_BASE}/{endpoint}/{venue_id}'
+    elif venue_id is not None and endpoint == 'events':
+        request_base = f'{SEATGEEK_API_BASE}/{endpoint}'
+        parameters['venue.id'] = venue_id
     else:
-        logger.info(f'ERROR: More information needed to complete venue search.')
+        request_base = f'{SEATGEEK_API_BASE}/{endpoint}'
+    response = requests.get(request_base, params=parameters)
+    return response
+
+def get_venue_info(venue_name = None, venue_city = "", venue_id = None):
+    if venue_id is not None:
+        response = seatgeek_request(endpoint = 'venues', venue_id = venue_id)
+        venue_obj = response.json()
+        return(venue_dict(venue_obj))
+    elif venue_name is not None:
+        response = seatgeek_request('venues', params = {'q': venue_name})
+        meta = response.json()['meta']
+        num_results_per_page = meta['per_page']
+        total_num_results = meta['total']
+        if total_num_results == 0:
+            logger.info(f'No venue found for {venue_name} in {venue_city}.')
+        elif total_num_results == 1 or venue_city == "":
+            venue_obj = response.json().get('venues')[0]
+            return venue_dict(venue_obj)
+        elif total_num_results > num_results_per_page:
+                num_results_pages = round_up(total_num_results/num_results_per_page)
+                venue_results = response.json().get('venues')
+                for page_num in range(2, num_results_pages+1):
+                    response = seatgeek_request('venues', params = {'q': venue_id, 'page': page_num})
+                    add_results = response.json()['venues']
+                    venue_results.extend(add_results)
+                for venue_obj in venue_results:
+                    result_city = venue_obj.get('city')
+                    if result_city == venue_city:
+                        return venue_dict(venue_obj)
+                    else:
+                        continue
+    else:
+        return "Could not find {venue_name} in {venue_city}"
         
 def venue_dict(venue_obj):
-    """Extract relevant fields from Songkick venue object"""
+    """Extract relevant fields from SeatGeek venue object"""
     venue_info = {'venue_id': venue_obj.get('id'),
-              'name': venue_obj.get('displayName'),
-              'city': venue_obj.get('city', {}).get('displayName'),
-              'state': venue_obj.get('city', {}).get('state', {}).get('displayName'),
-              'country': venue_obj.get('city', {}).get('country', {}).get('displayName'),
-              'website': venue_obj.get('website')
+              'name': venue_obj.get('name'),
+              'city': venue_obj.get('city'),
+              'state': venue_obj.get('state'),
+              'country': venue_obj.get('country'),
+              'url': venue_obj.get('url')
              }
     return venue_info
 
 def get_venue_events(venue_id):
-    """Returns a list of upcoming event objects from Songkick for a given venue."""
-    logger.info('PROCESS: Running get_venue_events')
-    req = f'https://api.songkick.com/api/3.0/venues/{venue_id}/calendar.json?apikey={SONGKICK_API_KEY}'
-    response = requests.get(req)
-    num_results_per_page = response.json()['resultsPage']['perPage']
-    total_num_results = response.json()['resultsPage']['totalEntries']
+    """Returns a list of upcoming event objects from SeatGeek for a given venue."""
+    logger.info('PROCESS: Running get_venue_events()')
+    response = seatgeek_request(endpoint = 'events', venue_id = venue_id)
+    meta = response.json()['meta']
+    num_results_per_page = meta['per_page']
+    total_num_results = meta['total']
     if total_num_results > num_results_per_page:
         num_results_pages = round_up(total_num_results/num_results_per_page)
-        venue_events = response.json()['resultsPage']['results']['event']
+        venue_events = response.json().get('events')
         for page_num in range(2, num_results_pages+1):
-            req = f'https://api.songkick.com/api/3.0/venues/{venue_id}/calendar.json?apikey={SONGKICK_API_KEY}&page={page_num}'
-            response = requests.get(req)
-            page_events = response.json()['resultsPage']['results']['event']
-            venue_events.extend(page_events)
+            response = seatgeek_request(endpoint = 'events', venue_id = venue_id, params = {'page': page_num})
+            add_events = response.json().get('events')
+            venue_events.extend(add_events)
     else:
-        venue_events = response.json()['resultsPage']['results'].get('event')
+        venue_events = response.json().get('events')
     if venue_events is not None:
         logger.info('SUCCESS: Venue events found')    
         return venue_events
     else:
         logger.info("ERROR: No events found for this venue.")
+        return("ERROR: No events found for this venue.")
 
 def events_df(event_list, limit=MAX_TRACKS):
-    """Creates a dataframe out of Songkick events results.
-    Excludes events flagged on Songkick as 'cancelled'."""
+    """Creates a dataframe out of SeatGeek events results."""
     dates = []
     artists = []
-    ids = []
+    genres = []
     for event in event_list:
-        status = event['status']
-        cancelled = status == "cancelled"
-        if not cancelled:
-            performance = event['performance']
-            num_performers = len(performance)
-            for artist in performance:
-                artists.append(artist['displayName'])
-                ids.append(artist['id'])
-            event_date = event['start']['date']
-            dates.extend([event_date] * num_performers)
+        performers = event.get('performers')
+        for artist in performers:
+            artists.append(artist.get('name'))
+            if artist.get('genres') is not None:
+                genre = [genre.get('name') for genre in artist.get('genres')]
+                #genre = ', '.join(genre)
+            else:
+                genre = ""
+            genres.append(genre)
+        num_performers = len(performers)
+        event_date = event.get('datetime_local')
+        dates.extend([event_date] * num_performers)
     if isinstance(limit, int): 
         dates = dates[0:limit]
         artists = artists[0:limit]
-        ids = ids[0:limit]
-    return pd.DataFrame(data={'artist':artists, 'date':dates, 'artist_id':ids})
+        genres = genres[0:limit]
+    events_df = pd.DataFrame(data={'artist': artists, 
+                              'date': dates, 
+                              'genre': genres})
+    events_df = events_df.groupby('artist').agg({'date':', '.join,
+                         'genre': 'first'}).sort_values('date').reset_index()
+    return events_df
 
 def get_artist(sp, search_str):
     """Search for an artist on Spotify and return artist object if found.
     Uses fuzzywuzzy's process.extractOne convenience function to parse search results for best match."""
     results = sp.search(search_str,type='artist')
-
     if results['artists']['total'] > 0:
         items = results['artists']['items']
         hits = {}
@@ -249,7 +276,7 @@ def show_list(venue_id):
         
 def artist_list(sp, showlist):
     """Compiles list of Spotify artist objects based on showlist."""
-    artist_list = list(showlist.artist)
+    artist_list = list(showlist['artist'])
     artist_list = list(process.dedupe(artist_list, threshold=99, scorer=fuzz.token_sort_ratio))
     artist_obj = []
     for artist in artist_list:

@@ -9,7 +9,8 @@ The following files must be in the flaskapp/ directory on your local machine:
 The `secrets.json` file should define the following credentials:
 ```json
 {
-    "SONGKICK_API_KEY": "YOUR-KEY-HERE",
+    "SEATGEEK_CLIENT_ID": "YOUR-KEY-HERE",
+    "SEATGEEK_CLIENT_SECRET": "YOUR-KEY-HERE",
     "SPOTIFY_CLIENT_ID": "YOUR-KEY-HERE",
     "SPOTIFY_CLIENT_SECRET": "YOUR-KEY-HERE",
     "FLASK_SECRET_KEY": "YOUR-KEY-HERE"
@@ -27,16 +28,17 @@ Next, `cd` into the `flask` directory and run the development server:
 
 ```bash
 $ cd flaskapp
-$ pipenv install
-$ pipenv run flask app
+$ pipenv install # only run this once
+$ pipenv shell
+$ flask run
 ```
 
 The `FLASK_ENV` is set to `development` in `.flaskenv`. You can change it there or set it prior to running `pipenv run flask app` as an environment variable with:
 ```bash
 $ cd flaskapp
-$ pipenv install
+$ pipenv shell
 $ export FLASK_ENV=production
-$ pipenv run flask app
+$ flask run
 ```
 
 The value of `FLASK_ENV` dictates the application configuration according to `config.py`.
@@ -49,7 +51,7 @@ Pushes to GitHub main are **not** automatically deployed. To deploy to Elastic B
 
 ```bash
 $ cd flaskapp
-$ eb init
+$ eb init  # only run this once
 $ eb deploy
 ```
 
