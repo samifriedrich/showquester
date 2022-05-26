@@ -1,13 +1,6 @@
 branch-defaults:
-  cfg_handling:
-    environment: flaskapp-dev
-  elasticbeanstalk-2:
-    environment: flaskapp-dev
-    group_suffix: null
   main:
-    environment: seatgeek
-  seatgeek:
-    environment: seatgeek
+    environment: flaskapp-dev
 environment-defaults:
   flaskapp-dev:
     branch: null

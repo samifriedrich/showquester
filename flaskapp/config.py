@@ -16,16 +16,14 @@ class Config(object):
     SPOTIFY_CLIENT_ID = SECRETS.get('SPOTIFY_CLIENT_ID')
     SPOTIFY_CLIENT_SECRET = SECRETS.get('SPOTIFY_CLIENT_SECRET')
     SCOPE = 'playlist-modify-public'
-    REDIRECT_URI = "https://seatgeek.us-east-1.elasticbeanstalk.com"
-    #REDIRECT_URI = "https://flaskapp-dev.us-east-1.elasticbeanstalk.com/callback"
-    #REDIRECT_URI = "https://www.showquester.com/callback"
+    REDIRECT_URI = "https://flaskapp-dev.us-east-1.elasticbeanstalk.com/callback"
     AUTH_BASE = 'https://accounts.spotify.com'
     HOME = 'https://www.showquester.com'
-    SHOW_DIALOG = True
+    SHOW_DIALOGUE = True
     MAX_TRACKS = 10
 
 class ProductionConfig(Config):
-    MAX_TRACKS = 10
+    MAX_TRACKS = 25
 
 class DevelopmentConfig(Config):
     DEBUG = True

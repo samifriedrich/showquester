@@ -18,6 +18,7 @@ logger.setLevel(logging.os.getenv('LOG_LEVEL'))
 handler = RotatingFileHandler(os.getenv('FLASK_LOG_FILE_PATH'), maxBytes=1000000,backupCount=5)
 handler.setFormatter(formatter)
 application.logger.addHandler(handler)
+logger.info('Logger set up')
 
 ## Configured vars
 SEATGEEK_CLIENT_ID = application.config['SEATGEEK_CLIENT_ID']
@@ -30,7 +31,7 @@ REDIRECT_URI = application.config['REDIRECT_URI']
 AUTH_BASE = application.config['AUTH_BASE']
 HOME = application.config['HOME']
 MAX_TRACKS = application.config['MAX_TRACKS']
-SHOW_DIALOG = True
+SHOW_DIALOG = application.config['SHOW_DIALOGUE']
 
 ## Routes
 
